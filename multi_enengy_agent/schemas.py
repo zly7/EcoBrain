@@ -18,6 +18,7 @@ class Stage(str, Enum):
     GEO = "geo"
     BASELINE = "baseline"
     MEASURES = "measures"
+    POLICY = "policy"
     FINANCE = "finance"
     REPORT = "report"
 

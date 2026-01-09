@@ -18,12 +18,12 @@ class ReportOrchestratorAgent(BaseAgent):
         geo = self._get_envelope_metrics(state, Stage.GEO)
         baseline = self._get_envelope_metrics(state, Stage.BASELINE)
         measures = self._get_envelope_metrics(state, Stage.MEASURES)
+        policy = self._get_envelope_metrics(state, Stage.POLICY)
+        policy_artifacts = self._get_envelope_artifacts(state, Stage.POLICY, default={})
         finance = self._get_envelope_metrics(state, Stage.FINANCE)
 
-        summary_context = self._build_summary_context(geo, baseline, measures, finance)
-        system_prompt = (
-            "你是工业园区低碳路线图助手。输出简洁的 markdown 段落，包含现状、机会、风险。"
-        )
+        summary_context = self._build_summary_context(geo, baseline, measures, policy, finance)
+        system_prompt = "你是工业园区低碳路线图助手。输出简洁的 markdown 段落，包含现状、机会、风险。"
         fallback_summary = self._fallback_summary(summary_context)
         summary_markdown = self.llm.markdown(
             system_prompt=system_prompt,
@@ -36,6 +36,8 @@ class ReportOrchestratorAgent(BaseAgent):
             geo=geo,
             baseline=baseline,
             measures=measures,
+            policy=policy,
+            policy_artifacts=policy_artifacts,
             finance=finance,
             summary=summary_markdown,
         )
@@ -97,18 +99,26 @@ class ReportOrchestratorAgent(BaseAgent):
                 )
 
     def _build_summary_context(
-        self, geo: Dict[str, Any], baseline: Dict[str, Any], measures: Dict[str, Any], finance: Dict[str, Any]
+        self,
+        geo: Dict[str, Any],
+        baseline: Dict[str, Any],
+        measures: Dict[str, Any],
+        policy: Dict[str, Any],
+        finance: Dict[str, Any],
     ) -> str:
         measures_brief = ", ".join(
             f"{item['name']} ({item['applicability_score']})" for item in measures.get("top_measures", [])
         )
+        policy_hit = policy.get("matched_clause_count", "N/A")
+        policy_subsidy = policy.get("policy_capex_subsidy_total_million_cny", "N/A")
         context = (
-            f"园区面积{geo.get('area_km2', 'N/A')} km2，估算企业 {geo.get('entity_count_est','N/A')} 家。"
+            f"园区面积{geo.get('area_km2', 'N/A')} km2，估算企业{geo.get('entity_count_est','N/A')} 家。"
             f" 基线排放 {baseline.get('total_emissions_tco2','N/A')} tCO2。"
             f" 推荐措施：{measures_brief or '暂无' }。"
+            f" 政策匹配条款 {policy_hit} 条，CAPEX补贴估算 {policy_subsidy} 百万。"
             f" 投资 {finance.get('portfolio_capex_million_cny','-')} 百万，NPV "
             f"{finance.get('portfolio_npv_million_cny','-')} 百万。"
-            " 输出一段 3 句话的总结。"
+            " 输出一个 3 句话的总结。"
         )
         return context
 
@@ -121,6 +131,8 @@ class ReportOrchestratorAgent(BaseAgent):
         geo: Dict[str, Any],
         baseline: Dict[str, Any],
         measures: Dict[str, Any],
+        policy: Dict[str, Any],
+        policy_artifacts: Dict[str, Any],
         finance: Dict[str, Any],
         summary: str,
     ) -> str:
@@ -147,14 +159,27 @@ class ReportOrchestratorAgent(BaseAgent):
         if not measures.get("top_measures"):
             lines.append("- 暂无推荐，需要补充数据。")
 
+        lines.append("## 4. 政策与激励匹配")
+        lines.append(f"- 匹配条款数：{policy.get('matched_clause_count','?')}")
+        lines.append(f"- CAPEX补贴估算（合计）：{policy.get('policy_capex_subsidy_total_million_cny','?')} 百万 CNY")
+        matched = (policy_artifacts or {}).get("matched_clauses") or []
+        if matched:
+            lines.append("- Top 条款（示例/虚拟数据需替换为真实政策）：")
+            for item in matched[:5]:
+                lines.append(f"  - {item.get('citation_no','[?]')} {item.get('doc_title','')}：{item.get('excerpt','')}")
+        else:
+            lines.append("- 未匹配到政策条款（可能是 admin_codes/industry_codes 缺失或 KG 文件为空）。")
+
         lines.extend(
             [
-                "## 4. 经济性",
-                f"- 总投资：{finance.get('portfolio_capex_million_cny','?')} 百万 CNY",
+                "## 5. 经济测算",
+                f"- 总投资（净值）：{finance.get('portfolio_capex_million_cny','?')} 百万 CNY",
+                f"- 总投资（含补贴前）：{finance.get('portfolio_capex_gross_million_cny','?')} 百万 CNY",
+                f"- 政策补贴：{finance.get('policy_incentive_million_cny','?')} 百万 CNY",
                 f"- 年净收益：{finance.get('portfolio_annual_net_million_cny','?')} 百万 CNY",
                 f"- NPV：{finance.get('portfolio_npv_million_cny','?')} 百万 CNY",
                 f"- 投资回收期：{finance.get('portfolio_payback_years','?')} 年",
-                "## 5. 风险与下一步",
+                "## 6. 风险与下一步",
                 "- 针对数据缺口建立人工校验点，确保证据链完整。",
                 "- 结合政策条款匹配工具补充政策激励引用。",
             ]

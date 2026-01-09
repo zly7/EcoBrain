@@ -20,6 +20,7 @@ def _default_selection():
             "park_name": "示例产业园",
             "roof_area_m2": 180000,
             "waste_heat_profile": "available",
+            "industry_codes": ["C26", "C30"],
         },
         "available_layers": ["admin_boundary", "firm_registry", "poi_energy"],
     }

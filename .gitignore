@@ -2,10 +2,14 @@
 __pycache__/
 *.py[cod]
 *$py.class
-
+*.pptx
+*.xlsx
+local*
+repomix*
 # C extensions
 *.so
-
+GPT5PRO*/
+nanoBanana*/
 # Distribution / packaging
 .Python
 build/
@@ -113,3 +117,7 @@ data/
 .env.*.local
 secrets.json
 config.local.py
+
+# Allow mock policy KG data committed under package directory
+!multi_enengy_agent/data/
+!multi_enengy_agent/data/mock_policy_kg.json

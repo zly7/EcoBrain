@@ -1,0 +1,83 @@
+﻿{
+  "kg_version": "mock-v0.1",
+  "generated_at": "2026-01-08",
+  "notes": "本文件为虚拟示例数据，用于开发与联调。请替换为德帆产出的真实KG",
+  "docs": [
+    {
+      "doc_id": "DOC_MOCK_001",
+      "title": "示例：苏州零碳园区试点支持政策（虚拟）",
+      "issuer": "示例主管部门",
+      "effective_date": "2025-01-01",
+      "uri": "internal://mock/DOC_MOCK_001"
+    },
+    {
+      "doc_id": "DOC_MOCK_002",
+      "title": "示例：工业节能与绿色改造奖励办法（虚拟）",
+      "issuer": "示例发改部门",
+      "effective_date": "2024-06-01",
+      "uri": "internal://mock/DOC_MOCK_002"
+    }
+  ],
+  "clauses": [
+    {
+      "clause_id": "DOC_MOCK_001_C01",
+      "doc_id": "DOC_MOCK_001",
+      "citation_no": "[DOC_MOCK_001-1]",
+      "effective_date": "2025-01-01",
+      "excerpt": "对园区屋顶光伏项目按投资额给予10%一次性补贴，单园区最高不超过200万元",
+      "admin_codes": ["320500", "320571"],
+      "industry_codes": [],
+      "measure_ids": ["PV_ROOF"],
+      "analysis_points": ["PV_SUBSIDY"],
+      "incentives": {
+        "capex_subsidy_pct": 0.10,
+        "capex_subsidy_cap_million_cny": 2.0
+      }
+    },
+    {
+      "clause_id": "DOC_MOCK_001_C02",
+      "doc_id": "DOC_MOCK_001",
+      "citation_no": "[DOC_MOCK_001-2]",
+      "effective_date": "2025-01-01",
+      "excerpt": "对工业余热回收与热泵耦合改造按投资额给予15%补贴，单项目最高不超过300万元",
+      "admin_codes": ["320500", "320571"],
+      "industry_codes": ["C26", "C30"],
+      "measure_ids": ["WASTE_HEAT"],
+      "analysis_points": ["WASTE_HEAT_SUPPORT"],
+      "incentives": {
+        "capex_subsidy_pct": 0.15,
+        "capex_subsidy_cap_million_cny": 3.0
+      }
+    },
+    {
+      "clause_id": "DOC_MOCK_002_C01",
+      "doc_id": "DOC_MOCK_002",
+      "citation_no": "[DOC_MOCK_002-1]",
+      "effective_date": "2024-06-01",
+      "excerpt": "对储能削峰填谷示范项目按投资额给予8%补贴，单项目最高不超过150万元",
+      "admin_codes": ["320500"],
+      "industry_codes": [],
+      "measure_ids": ["BESS_TOU"],
+      "analysis_points": ["BESS_SUPPORT"],
+      "incentives": {
+        "capex_subsidy_pct": 0.08,
+        "capex_subsidy_cap_million_cny": 1.5
+      }
+    },
+    {
+      "clause_id": "DOC_MOCK_002_C02",
+      "doc_id": "DOC_MOCK_002",
+      "citation_no": "[DOC_MOCK_002-2]",
+      "effective_date": "2024-06-01",
+      "excerpt": "对高效电机与变频改造按投资额给予5%奖励，单项目最高不超过80万元",
+      "admin_codes": [],
+      "industry_codes": [],
+      "measure_ids": ["EE_MOTOR"],
+      "analysis_points": ["EE_MOTOR_SUPPORT"],
+      "incentives": {
+        "capex_subsidy_pct": 0.05,
+        "capex_subsidy_cap_million_cny": 0.8
+      }
+    }
+  ]
+}

@@ -7,6 +7,7 @@ from .agents import (
     FinanceIntegratorAgent,
     GeoResolverAgent,
     MeasureScreenerAgent,
+    PolicyKnowledgeGraphAgent,
     ReportOrchestratorAgent,
 )
 from .schemas import BlackboardState
@@ -19,6 +20,7 @@ __all__ = [
     "GeoResolverAgent",
     "BaselineAgent",
     "MeasureScreenerAgent",
+    "PolicyKnowledgeGraphAgent",
     "FinanceIntegratorAgent",
     "ReportOrchestratorAgent",
 ]

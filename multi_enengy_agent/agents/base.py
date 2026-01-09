@@ -75,6 +75,7 @@ class BaseAgent(ABC):
         evidence: Optional[List[Evidence]] = None,
         confidence: float = 0.5,
         data_gaps: Optional[List[DataGap]] = None,
+        reproducibility_extra: Optional[Dict[str, Any]] = None,
     ) -> ResultEnvelope:
         scenario_id = self._scenario_id(state)
         region_id = self._region_id(state)
@@ -82,6 +83,14 @@ class BaseAgent(ABC):
             "agent": self.name,
             "agent_version": self.agent_version,
         }
+        scenario = state.get("scenario") or {}
+        param_version = scenario.get("param_version")
+        if param_version:
+            reproducibility["scenario_param_version"] = param_version
+        if reproducibility_extra:
+            for key, value in reproducibility_extra.items():
+                if value is not None:
+                    reproducibility[key] = value
         envelope = ResultEnvelope(
             result_id=new_result_id(self.stage),
             scenario_id=scenario_id,

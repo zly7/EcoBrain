@@ -14,20 +14,30 @@ class FinanceIntegratorAgent(BaseAgent):
 
     def run(self, state) -> AgentRunResult:  # type: ignore[override]
         measures_metrics = self._get_envelope_metrics(state, Stage.MEASURES)
+        policy_artifacts = self._get_envelope_artifacts(state, Stage.POLICY, default={})
         scenario = state.get("scenario") or {}
 
         measures = measures_metrics.get("top_measures") or []
+        incentives_by_measure = policy_artifacts.get("incentives_by_measure") or {}
         discount_rate = scenario.get("discount_rate", 0.08)
         wacc = scenario.get("wacc", 0.09)
         lifetime_years = scenario.get("finance_horizon_years", 10)
 
+        gross_capex = 0.0
+        total_incentive = 0.0
         total_capex = 0.0
         total_annual_net = 0.0
         cashflows: List[Dict[str, float]] = []
         for measure in measures:
             capex = float(measure.get("capex_million_cny") or 0.0)
+            gross_capex += capex
+            measure_id = str(measure.get("id") or "")
+            incentive = float((incentives_by_measure.get(measure_id) or {}).get("capex_subsidy_million_cny") or 0.0)
+            incentive = max(0.0, min(incentive, capex))
+            total_incentive += incentive
+            capex_net = capex - incentive
             annual_net = float(measure.get("annual_net_savings_million_cny") or 0.0)
-            total_capex += capex
+            total_capex += capex_net
             total_annual_net += annual_net
 
         for year in range(1, lifetime_years + 1):
@@ -39,6 +49,8 @@ class FinanceIntegratorAgent(BaseAgent):
 
         metrics = {
             "portfolio_capex_million_cny": round(total_capex, 2),
+            "portfolio_capex_gross_million_cny": round(gross_capex, 2),
+            "policy_incentive_million_cny": round(total_incentive, 2),
             "portfolio_annual_net_million_cny": round(total_annual_net, 2),
             "portfolio_npv_million_cny": npv,
             "portfolio_payback_years": payback,

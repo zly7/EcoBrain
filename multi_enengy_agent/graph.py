@@ -15,6 +15,7 @@ from .agents import (
     FinanceIntegratorAgent,
     GeoResolverAgent,
     MeasureScreenerAgent,
+    PolicyKnowledgeGraphAgent,
     ReportOrchestratorAgent,
 )
 from .agents.base import BaseAgent
@@ -34,6 +35,7 @@ def _agent_sequence(llm: Optional[StructuredLLMClient]) -> List[BaseAgent]:
         GeoResolverAgent(),
         BaselineAgent(),
         MeasureScreenerAgent(),
+        PolicyKnowledgeGraphAgent(),
         FinanceIntegratorAgent(),
         ReportOrchestratorAgent(llm=llm),
     ]
@@ -67,14 +69,15 @@ def build_langgraph(llm: Optional[StructuredLLMClient] = None):
 
         return node
 
-    node_names = ["geo", "baseline", "measures", "finance", "report"]
+    node_names = ["geo", "baseline", "measures", "policy", "finance", "report"]
     for name, agent in zip(node_names, agents):
         graph.add_node(name, _wrap(agent))
 
     graph.set_entry_point("geo")
     graph.add_edge("geo", "baseline")
     graph.add_edge("baseline", "measures")
-    graph.add_edge("measures", "finance")
+    graph.add_edge("measures", "policy")
+    graph.add_edge("policy", "finance")
     graph.add_edge("finance", "report")
     graph.add_edge("report", END)
     return graph.compile()
