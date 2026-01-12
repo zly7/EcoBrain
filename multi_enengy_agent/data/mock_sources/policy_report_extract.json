@@ -1,0 +1,142 @@
+{
+  "docs": [
+    {
+      "doc_id": "DOC_SUZ_2025_ZCIP_01",
+      "title": "苏州市零碳园区试点支持政策（虚拟）",
+      "issuer": "苏州市发改委（虚拟）",
+      "effective_date": "2025-01-01",
+      "uri": "internal://policy/DOC_SUZ_2025_ZCIP_01"
+    },
+    {
+      "doc_id": "DOC_SUZ_2024_EE_02",
+      "title": "工业节能与绿色改造奖励办法（虚拟）",
+      "issuer": "苏州市工信局（虚拟）",
+      "effective_date": "2024-06-01",
+      "uri": "internal://policy/DOC_SUZ_2024_EE_02"
+    },
+    {
+      "doc_id": "DOC_JS_2025_POWER_03",
+      "title": "江苏省用户侧储能与削峰响应支持细则（虚拟）",
+      "issuer": "江苏省能源局（虚拟）",
+      "effective_date": "2025-03-01",
+      "uri": "internal://policy/DOC_JS_2025_POWER_03"
+    }
+  ],
+  "clauses": [
+    {
+      "clause_id": "DOC_SUZ_2025_ZCIP_01_C01",
+      "doc_id": "DOC_SUZ_2025_ZCIP_01",
+      "citation_no": "[ZCIP-1]",
+      "effective_date": "2025-01-01",
+      "excerpt": "对园区屋顶光伏项目按投资额给予10%一次性补贴，单园区最高不超过200万元。",
+      "admin_codes": [
+        "320500"
+      ],
+      "industry_codes": [],
+      "measure_ids": [
+        "PV_ROOF"
+      ],
+      "analysis_points": [
+        "PV_SUBSIDY",
+        "GRID_CONNECTION_FAST_TRACK"
+      ],
+      "incentives": {
+        "capex_subsidy_pct": 0.1,
+        "capex_subsidy_cap_million_cny": 2.0
+      },
+      "eligibility": {
+        "min_roof_area_m2": 5000,
+        "requirement": [
+          "并网验收",
+          "消防合规"
+        ]
+      }
+    },
+    {
+      "clause_id": "DOC_SUZ_2025_ZCIP_01_C02",
+      "doc_id": "DOC_SUZ_2025_ZCIP_01",
+      "citation_no": "[ZCIP-2]",
+      "effective_date": "2025-01-01",
+      "excerpt": "对工业余热回收与热泵耦合改造按投资额给予15%补贴，单项目最高不超过300万元。",
+      "admin_codes": [
+        "320500"
+      ],
+      "industry_codes": [
+        "C26",
+        "C30"
+      ],
+      "measure_ids": [
+        "WASTE_HEAT"
+      ],
+      "analysis_points": [
+        "WASTE_HEAT_SUPPORT",
+        "HEAT_PUMP_COUPLING"
+      ],
+      "incentives": {
+        "capex_subsidy_pct": 0.15,
+        "capex_subsidy_cap_million_cny": 3.0
+      },
+      "eligibility": {
+        "min_available_waste_heat_mw": 0.8,
+        "temperature_c_min": 35
+      }
+    },
+    {
+      "clause_id": "DOC_SUZ_2024_EE_02_C01",
+      "doc_id": "DOC_SUZ_2024_EE_02",
+      "citation_no": "[EE-1]",
+      "effective_date": "2024-06-01",
+      "excerpt": "对高效电机与变频改造项目按投资额给予8%补贴，单项目最高不超过120万元。",
+      "admin_codes": [
+        "320500"
+      ],
+      "industry_codes": [
+        "C26",
+        "C30",
+        "C34"
+      ],
+      "measure_ids": [
+        "EE_MOTOR"
+      ],
+      "analysis_points": [
+        "MOTOR_EFFICIENCY",
+        "VFD_RETROFIT"
+      ],
+      "incentives": {
+        "capex_subsidy_pct": 0.08,
+        "capex_subsidy_cap_million_cny": 1.2
+      },
+      "eligibility": {
+        "min_motor_count": 20,
+        "min_operating_hours_per_year": 3000
+      }
+    },
+    {
+      "clause_id": "DOC_JS_2025_POWER_03_C01",
+      "doc_id": "DOC_JS_2025_POWER_03",
+      "citation_no": "[BESS-1]",
+      "effective_date": "2025-03-01",
+      "excerpt": "对用户侧储能项目按投资额给予12%补贴，单项目最高不超过500万元；参与削峰响应可叠加运营补贴。",
+      "admin_codes": [
+        "320000"
+      ],
+      "industry_codes": [],
+      "measure_ids": [
+        "BESS_TOU"
+      ],
+      "analysis_points": [
+        "BESS_CAPEX",
+        "DEMAND_RESPONSE"
+      ],
+      "incentives": {
+        "capex_subsidy_pct": 0.12,
+        "capex_subsidy_cap_million_cny": 5.0
+      },
+      "eligibility": {
+        "min_power_mw": 1.0,
+        "min_duration_h": 2,
+        "grid_agreement": "required"
+      }
+    }
+  ]
+}

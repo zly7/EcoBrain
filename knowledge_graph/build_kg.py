@@ -18,6 +18,7 @@ from dataclasses import asdict
 from pathlib import Path
 from typing import Any, Dict, Iterable, List, Optional, Tuple
 
+from . import resolve_data_dir, resolve_mock_source_dir
 from .kg_model import KGRef, KnowledgeGraph, utc_now_iso
 
 
@@ -542,9 +543,8 @@ def write_outputs(
 
 
 def main() -> None:
-    base = Path(__file__).resolve().parents[1]  # multi_enengy_agent/
-    data_dir = base / "data"
-    source_dir = data_dir / "mock_sources"
+    data_dir = resolve_data_dir()
+    source_dir = resolve_mock_source_dir()
     out_policy = data_dir / "mock_policy_kg.json"
     out_full = data_dir / "mock_park_policy_graph.json"
 

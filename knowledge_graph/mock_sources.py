@@ -19,6 +19,8 @@ from datetime import date
 from pathlib import Path
 from typing import Any, Dict, Iterable, List
 
+from . import resolve_mock_source_dir
+
 
 def _write_json(path: Path, payload: Dict[str, Any]) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
@@ -812,8 +814,7 @@ def write_mock_sources(out_dir: Path) -> Dict[str, Path]:
 
 
 def main() -> None:
-    base = Path(__file__).resolve().parents[1]
-    out_dir = base / "data" / "mock_sources"
+    out_dir = resolve_mock_source_dir()
     mapping = write_mock_sources(out_dir)
     print("Mock sources written:")
     for name, path in mapping.items():

@@ -14,16 +14,14 @@ because PolicyKnowledgeGraphAgent defaults to that path.
 
 from __future__ import annotations
 
-from pathlib import Path
-
+from . import resolve_data_dir, resolve_mock_source_dir
 from .mock_sources import write_mock_sources
 from .build_kg import write_outputs
 
 
 def main() -> None:
-    base = Path(__file__).resolve().parents[1]  # multi_enengy_agent/
-    data_dir = base / "data"
-    source_dir = data_dir / "mock_sources"
+    data_dir = resolve_data_dir()
+    source_dir = resolve_mock_source_dir()
 
     write_mock_sources(source_dir)
 

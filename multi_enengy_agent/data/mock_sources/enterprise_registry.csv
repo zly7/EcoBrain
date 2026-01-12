@@ -1,0 +1,4 @@
+enterprise_id,name,industry_code,employees,output_value_million_cny,has_boiler,has_waste_heat,has_roof_pv_ready,notes
+ENT_001,苏澄精细化工（虚拟）,C26,820,2200,True,True,True,余热以冷却水为主；锅炉效率偏低
+ENT_002,新材非金属制品（虚拟）,C30,460,980,False,True,False,电窑负荷高，适合储能+余热
+ENT_003,高端装备零部件（虚拟）,C34,310,760,False,low_grade,True,电机系统改造潜力较大

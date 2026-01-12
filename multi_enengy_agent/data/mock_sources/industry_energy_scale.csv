@@ -1,0 +1,4 @@
+industry_code,industry_name,electricity_mwh_per_billion_output,thermal_mwh_per_billion_output,waste_heat_grade,waste_heat_potential_mwh_per_billion_output,common_measures,investment_priority_hint
+C26,化学原料和化学制品制造业（示例）,5200,6800,low_to_mid,1100,WASTE_HEAT|EE_MOTOR|PV_ROOF,副产物/余热耦合空间大，适合构建园区能量梯级利用示范
+C30,非金属矿物制品业（示例）,7600,2400,mid_to_high,1900,WASTE_HEAT|BESS_TOU|PV_ROOF,窑炉负荷+余热，适合热泵/ORC/储能联合
+C34,通用设备制造业（示例）,3200,800,low,250,EE_MOTOR|PV_ROOF|BESS_TOU,电气化程度高，可作为绿电消纳+储能示范
