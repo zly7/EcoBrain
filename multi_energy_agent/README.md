@@ -1,66 +1,101 @@
-# multi_enengy_agent 使用说明
+# multi_energy_agent 使用说明
 
-本目录包含一个围绕“园区低碳路线图”构建的多 Agent 流水线，实现 `geo → baseline → measures → policy → finance → report` 的确定性评估链路。各阶段统一遵循 ResultEnvelope/Blackboard 合同，可用于 LLM+规则混合协同、证据追溯与人工复核。
+本目录提供一个“报告优先”的园区能源/低碳分析 3-Agent 流水线：Intake → Insight → Report。各阶段通过统一的 BlackboardState 与 ResultEnvelope 传递结构化数据，便于证据追溯、人工复核与 UI/API 对接。
 
-## 1. 目录速览
+## 1. 目录结构
 
 ```
-multi_enengy_agent/
-├── agents/               # Geo/Baseline/Measures/Policy/Finance/Report 等 Agent
-├── data/mock_policy_kg.json
-│                         # 虚拟政策知识图谱（可替换成德帆导出的真实数据）
-├── graph.py              # LangGraph wiring，按阶段顺序衔接节点
-├── policy_kg.py          # KG 加载 + 匹配 + 补贴聚合工具
-├── runner.py             # CLI 入口（默认顺序执行，可切换 LangGraph）
-├── schemas.py            # ResultEnvelope、BlackboardState、Stage 等共享模型
-└── README.md
+multi_energy_agent/
+├── agents/
+│   ├── data_intake.py         # DataIntakeAgent：CSV/PDF/Excel 接入与画像、plan.md 初始化/刷新
+│   ├── insight.py             # InsightSynthesisAgent：基线描述、措施筛选、政策 KG 匹配、叙事汇总
+│   └── report.py              # ReportOrchestratorAgent：生成 ≥1000 中文字符的 report.md + qa_index.json
+├── planning.py                # PlanManager：Claude-code 风格 plan.md，内嵌 JSON 状态
+├── policy_kg.py               # PolicyKnowledgeGraph：确定性匹配与补贴聚合（可替换为真实 KG 服务）
+├── llm.py                     # StructuredLLMClient：可选的 LLM 文本增强（无 Key 走 fallback）
+├── runner.py                  # run_scenario：顺序执行 3 个 Agent，返回 BlackboardState
+├── schemas.py                 # Stage / ResultEnvelope / DataGap / ReviewItem 等共享结构
+└── data/
+    ├── mock_policy_kg.json    # 默认的政策 KG 示例数据
+    └── mock_park_policy_graph.json
 ```
 
 ## 2. 环境要求
 
 - Python 3.10+
-- 可选：安装 `langgraph` 与 OpenAI SDK；若未安装会自动降级为顺序执行/离线 LLM 回退。
+- 可选依赖：
+  - `pandas`（CSV 画像）、`openpyxl`（Excel 解析）、`pypdf` 或 `PyPDF2`（PDF 文本抽取）
+  - `openai`（设置 `OPENAI_API_KEY` 后用于报告叙事增强）
 
-## 3. 如何运行
+无可选依赖或无 LLM Key 的情况下，系统仍可运行，缺失功能会以 DataGap 记录并采用降级回退。
 
-```bash
-# 推荐使用顺序模式跑通全链路
-python -m multi_enengy_agent.runner --no-langgraph
+## 3. 最小示例（Python 方式）
 
-# 若已安装 langgraph，可省略 --no-langgraph 直接跑图执行
-python -m multi_enengy_agent.runner
+```python
+from multi_energy_agent.runner import run_scenario
+
+state = run_scenario(
+    selection={
+        "metadata": {
+            "admin_code": "310000",
+            "area_km2": 12.5,
+            "entity_count": 18,
+            "industry_codes": ["C13", "D44"],
+        }
+    },
+    scenario={"scenario_id": "demo-park", "baseline_year": 2023},
+    inputs={
+        "csv_paths": ["data/sample_park.csv"],
+        "pdf_paths": ["data/policy_brief.pdf"],
+        "excel_paths": ["data/cashflow.xlsx"],
+    },
+)
+
+print(state["envelopes"]["report"]["artifacts"]["report_path"])  # 输出 report.md 的路径
 ```
 
-运行完成后控制台会打印：
+也可以直接运行内置 Demo：
 
-1. 已执行的阶段（包含新增的 `policy`）。
-2. Review 队列里需要人工确认的 checkpoint 数。
-3. Report 节选，附带“政策与激励匹配”章节，可在 UI 或 API 层直接复用。
-4. 可选 `--dump-json` 把最终 BlackboardState 输出到 `<job_id>.json` 做审计或调试。
+```bash
+python -m multi_energy_agent.runner
+```
 
-## 4. 虚拟政策知识图谱（mock_policy_kg.json）
+## 4. 输入与输出
 
-- 该文件提供最小可用的政策/条款/激励结构，目的是先把 agent 逻辑跑通，后续只需替换为德帆产出的 JSON 或 API 返回。
-- 默认路径：`multi_enengy_agent/data/mock_policy_kg.json`。如需加载真实 KG，可设置环境变量 `POLICY_KG_PATH=/path/to/your_kg.json`。
-- 匹配规则：`admin_codes + industry_codes + measure_ids` 标签重叠即命中，多标签越具体得分越高。Agent 输出 `matched_clauses` 和 `incentives_by_measure`，Finance 会按测算 CAPEX 自动扣减补贴。
+- 输入（通过 `run_scenario(..., inputs=...)` 指定）：
+  - `csv_paths: list[str]`
+  - `pdf_paths: list[str]`
+  - `excel_paths: list[str]`
+- 输出（位于 `outputs/<scenario_id>/`）：
+  - `plan.md`：任务清单 + 进度日志（每次关键步骤都会刷新），文件末尾嵌入机器可读 JSON 状态
+  - `artifacts/`：`inventory.json`、CSV 画像、PDF 摘要、Excel 表格、`qa_index.json` 等
+  - `report.md`：最终报告（保证中文字符数 ≥ 1000），自动汇总 DataGap 与证据引用
+  - `state["review_items"]`：需要人工补齐/确认的检查点提示（例如缺少 admin_codes、未提供 PDF/Excel 等）
 
-## 5. 流水线阶段概览
+## 5. 配置项（环境变量）
 
-| 阶段      | 负责 Agent                    | 核心输出                                                                 |
-|-----------|--------------------------------|--------------------------------------------------------------------------|
-| geo       | `GeoResolverAgent`             | 标准化选区、面积、行政区划、数据完备度                                   |
-| baseline  | `BaselineAgent`                | Scope1/2 能碳基线、强度指标、继承数据缺口                               |
-| measures  | `MeasureScreenerAgent`        | 候选减排措施（含缺口提示），为政策匹配/财务准备 measure ids             |
-| policy    | `PolicyKnowledgeGraphAgent`   | 匹配政策条款、生成 citation 列表、测算 CAPEX 补贴并写入 artifacts        |
-| finance   | `FinanceIntegratorAgent`      | 同时输出补贴前后 CAPEX、年净收益、NPV、现金流表                         |
-| report    | `ReportOrchestratorAgent`     | Markdown 报告（含政策章节）、汇总 data gaps、输出参数表                  |
+- `OPENAI_API_KEY`：启用 LLM 增强；未设置则走 fallback 文本
+- `OPENAI_MODEL`、`OPENAI_TEMPERATURE`：可选，控制 LLM 行为（默认 `gpt-4o-mini` / `0.2`）
+- `POLICY_KG_PATH`：指定政策知识图谱 JSON 路径；未设置时使用 `data/mock_policy_kg.json`
 
-所有阶段都在 envelope 的 `reproducibility` 字段写入 agent 版本、场景参数版本，policy 额外写入 `policy_kg_version`，方便跟踪 KG 数据源。
+## 6. 工作原理（简述）
 
-## 6. 自定义与扩展
+- DataIntakeAgent
+  - 扫描 CSV/PDF/Excel，生成 `inventory.json`、基础画像与占位说明；初始化并持续刷新 `plan.md`
+- InsightSynthesisAgent
+  - 基于选择元数据 + Intake 产物，给出基线描述、措施筛选、政策条款匹配与补贴聚合、财务/能流叙事（尽量使用已有数据，不做重型优化）
+- ReportOrchestratorAgent
+  - 汇总产物，生成规范化的 Markdown 报告（中文字符 ≥ 1000），保存 `report.md`，并产出 `qa_index.json`
 
-1. **替换政策数据**：准备符合 plan1.md 中说明的 JSON 结构，将路径配置到 `POLICY_KG_PATH` 或覆盖默认文件。
-2. **接入真实 LLM**：在运行时提供 `OPENAI_API_KEY`，Report 阶段即可调用 OpenAI；无 key 时自动使用 fallback。
-3. **联调 UI/API**：流水线所有中间结果均存放在 BlackboardState 中，可在 `run_job` 返回值里按阶段读取 `envelopes['stage'].artifacts`。
+## 7. 常见问题
 
-如需进一步扩展（数据补齐 agent、能流计算、组合优化等），可以在 `graph.py` 中新增节点并沿袭同样的 ResultEnvelope 契约。欢迎继续按 GPT5PRO_plan/plan1.md 的路线推进。***
+- 中文乱码/问号：请使用 UTF-8 编码查看与保存文件；本项目所有文本文件均以 UTF-8 编写
+- 缺少第三方库：对应能力会降级并记录 DataGap，建议按需安装 `pandas`/`openpyxl`/`pypdf`
+- 未设置 LLM Key：报告仍可生成，只是部分叙事采用 fallback 文本
+
+## 8. 下一步与扩展
+
+- 替换为真实政策 KG：将导出的 JSON 路径写入 `POLICY_KG_PATH`
+- 对接 UI/API：直接使用 `run_scenario` 返回的 `state["envelopes"][stage]` 中的 `artifacts/metrics`
+- 增强计算：如需能流计算或优化求解，建议在 Agent 之外先离线得到结果（CSV/Excel/JSON），再交由 Agent 做解释与报告
+

@@ -1,17 +1,19 @@
-"""Agent implementations exposed for the LangGraph pipeline."""
+"""Agent implementations exposed for the pipeline.
 
-from .geo import GeoResolverAgent
-from .baseline import BaselineAgent
-from .measures import MeasureScreenerAgent
-from .policy import PolicyKnowledgeGraphAgent
-from .finance import FinanceIntegratorAgent
+IMPORTANT:
+- Agent count must be <= 4 (mentor requirement).
+- Recommended 3-agent pipeline:
+    1) DataIntakeAgent
+    2) InsightSynthesisAgent
+    3) ReportOrchestratorAgent
+"""
+
+from .data_intake import DataIntakeAgent
+from .insight import InsightSynthesisAgent
 from .report import ReportOrchestratorAgent
 
 __all__ = [
-    "GeoResolverAgent",
-    "BaselineAgent",
-    "MeasureScreenerAgent",
-    "PolicyKnowledgeGraphAgent",
-    "FinanceIntegratorAgent",
+    "DataIntakeAgent",
+    "InsightSynthesisAgent",
     "ReportOrchestratorAgent",
 ]

@@ -1,59 +1,31 @@
-"""Shared schemas used across the multi agent pipeline.
+"""Core schemas shared across agents.
 
-The classes in this module follow the guidance captured in 指引.md and
-explicitly model the ResultEnvelope + shared blackboard contract so that
-every agent can emit auditable, reproducible outputs.
+NOTE: This project uses a "blackboard" dict (`BlackboardState`) to pass structured
+data between stages. Each stage emits a `ResultEnvelope`, and the runner stores
+`envelope.as_dict()` under `state["envelopes"][stage.value]`.
 """
 
 from __future__ import annotations
 
+import uuid
 from dataclasses import dataclass, field, asdict
 from enum import Enum
 from typing import Any, Dict, List, Optional, TypedDict
-from uuid import uuid4
-from datetime import datetime, timezone
 
 
 class Stage(str, Enum):
-    GEO = "geo"
-    BASELINE = "baseline"
-    MEASURES = "measures"
-    POLICY = "policy"
-    FINANCE = "finance"
-    REPORT = "report"
+    """Pipeline stages (agent count <= 4, recommended 3)."""
+
+    INTAKE = "intake"   # Data intake & profiling (CSV/PDF/Excel)
+    INSIGHT = "insight" # KG-driven description & deepresearch synthesis (no optimization)
+    REPORT = "report"   # Final markdown report (>=1000 Chinese chars) + local save
 
 
-class Selection(TypedDict, total=False):
-    type: str
-    geometry: Dict[str, Any]
-    metadata: Dict[str, Any]
-
-
-class ScenarioContext(TypedDict, total=False):
-    scenario_id: str
-    carbon_price: float
-    electricity_price: float
-    wacc: float
-    discount_rate: float
-    param_version: str
-
-
-def _timestamp() -> str:
-    return datetime.now(tz=timezone.utc).isoformat().replace("+00:00", "Z")
+BlackboardState = Dict[str, Any]
 
 
 def new_result_id(stage: Stage) -> str:
-    return f"{stage.value}-{uuid4().hex[:8]}"
-
-
-@dataclass
-class Assumption:
-    name: str
-    value: Any
-    unit: Optional[str] = None
-    reason: Optional[str] = None
-    sensitivity: Optional[str] = None
-    source: Optional[str] = None
+    return f"{stage.value}-{uuid.uuid4().hex[:12]}"
 
 
 @dataclass
@@ -62,14 +34,34 @@ class Evidence:
     description: str
     source: str
     uri: Optional[str] = None
-    retrieved_at: str = field(default_factory=_timestamp)
+    page: Optional[int] = None
+    excerpt: Optional[str] = None
+
+    def as_dict(self) -> Dict[str, Any]:
+        return asdict(self)
+
+
+@dataclass
+class Assumption:
+    name: str
+    value: Any
+    unit: Optional[str] = None
+    reason: str = ""
+    source: Optional[str] = None
+    sensitivity: str = "medium"
+
+    def as_dict(self) -> Dict[str, Any]:
+        return asdict(self)
 
 
 @dataclass
 class DataGap:
     missing: str
     impact: str
-    severity: str = "medium"
+    severity: str = "medium"  # low/medium/high
+
+    def as_dict(self) -> Dict[str, Any]:
+        return asdict(self)
 
 
 @dataclass
@@ -81,27 +73,7 @@ class HumanReviewItem:
     suggested_action: str
     severity: str = "medium"
 
-    def to_dict(self) -> Dict[str, Any]:
-        payload = asdict(self)
-        payload["stage"] = self.stage.value
-        return payload
-
-
-@dataclass
-class StageLogEntry:
-    stage: Stage
-    status: str
-    detail: str
-    started_at: str = field(default_factory=_timestamp)
-    finished_at: Optional[str] = None
-
-    def complete(self, status: str, detail: Optional[str] = None) -> None:
-        self.status = status
-        if detail:
-            self.detail = detail
-        self.finished_at = _timestamp()
-
-    def to_dict(self) -> Dict[str, Any]:
+    def as_dict(self) -> Dict[str, Any]:
         payload = asdict(self)
         payload["stage"] = self.stage.value
         return payload
@@ -113,7 +85,7 @@ class ResultEnvelope:
     scenario_id: str
     region_id: str
     stage: Stage
-    metrics: Dict[str, Any] = field(default_factory=dict)
+    metrics: Dict[str, Any]
     artifacts: Dict[str, Any] = field(default_factory=dict)
     assumptions: List[Assumption] = field(default_factory=list)
     evidence: List[Evidence] = field(default_factory=list)
@@ -121,64 +93,17 @@ class ResultEnvelope:
     data_gaps: List[DataGap] = field(default_factory=list)
     reproducibility: Dict[str, Any] = field(default_factory=dict)
 
-    def to_dict(self) -> Dict[str, Any]:
-        payload = {
+    def as_dict(self) -> Dict[str, Any]:
+        return {
             "result_id": self.result_id,
             "scenario_id": self.scenario_id,
             "region_id": self.region_id,
             "stage": self.stage.value,
             "metrics": self.metrics,
             "artifacts": self.artifacts,
-            "assumptions": [asdict(a) for a in self.assumptions],
-            "evidence": [asdict(e) for e in self.evidence],
+            "assumptions": [a.as_dict() for a in self.assumptions],
+            "evidence": [e.as_dict() for e in self.evidence],
             "confidence": self.confidence,
-            "data_gaps": [asdict(g) for g in self.data_gaps],
+            "data_gaps": [g.as_dict() for g in self.data_gaps],
             "reproducibility": self.reproducibility,
         }
-        return payload
-
-
-class BlackboardState(TypedDict, total=False):
-    job_id: str
-    selection: Selection
-    scenario: ScenarioContext
-    envelopes: Dict[str, Dict[str, Any]]
-    review_queue: List[Dict[str, Any]]
-    logs: List[Dict[str, Any]]
-
-
-def empty_state(job_id: str, selection: Selection, scenario: ScenarioContext) -> BlackboardState:
-    return {
-        "job_id": job_id,
-        "selection": selection,
-        "scenario": scenario,
-        "envelopes": {},
-        "review_queue": [],
-        "logs": [],
-    }
-
-
-def with_envelope(state: BlackboardState, envelope: ResultEnvelope) -> BlackboardState:
-    envelopes = dict(state.get("envelopes") or {})
-    envelopes[envelope.stage.value] = envelope.to_dict()
-    updated = dict(state)
-    updated["envelopes"] = envelopes
-    return updated
-
-
-def append_review_items(
-    state: BlackboardState, review_items: List[HumanReviewItem]
-) -> BlackboardState:
-    queue = list(state.get("review_queue") or [])
-    queue.extend(item.to_dict() for item in review_items)
-    updated = dict(state)
-    updated["review_queue"] = queue
-    return updated
-
-
-def append_logs(state: BlackboardState, log_entry: StageLogEntry) -> BlackboardState:
-    logs = list(state.get("logs") or [])
-    logs.append(log_entry.to_dict())
-    updated = dict(state)
-    updated["logs"] = logs
-    return updated

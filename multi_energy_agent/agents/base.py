@@ -17,8 +17,8 @@ from ..schemas import (
     new_result_id,
 )
 
-if TYPE_CHECKING:
-    from ..llm import StructuredLLMClient  # pragma: no cover
+if TYPE_CHECKING:  # pragma: no cover
+    from ..llm import StructuredLLMClient
 
 
 @dataclass
@@ -31,7 +31,7 @@ class AgentRunResult:
 class BaseAgent(ABC):
     """Shared logic for emitting ResultEnvelope compliant outputs."""
 
-    agent_version = "0.1.0"
+    agent_version = "0.2.0"
 
     def __init__(self, stage: Stage, name: str, llm: Optional["StructuredLLMClient"] = None):
         self.stage = stage
@@ -43,7 +43,7 @@ class BaseAgent(ABC):
 
     @abstractmethod
     def run(self, state: BlackboardState) -> AgentRunResult:
-        ...
+        raise NotImplementedError
 
     def _get_envelope_metrics(self, state: BlackboardState, stage: Stage) -> Dict[str, Any]:
         envelopes = state.get("envelopes") or {}
@@ -79,7 +79,7 @@ class BaseAgent(ABC):
     ) -> ResultEnvelope:
         scenario_id = self._scenario_id(state)
         region_id = self._region_id(state)
-        reproducibility = {
+        reproducibility: Dict[str, Any] = {
             "agent": self.name,
             "agent_version": self.agent_version,
         }
@@ -91,7 +91,8 @@ class BaseAgent(ABC):
             for key, value in reproducibility_extra.items():
                 if value is not None:
                     reproducibility[key] = value
-        envelope = ResultEnvelope(
+
+        return ResultEnvelope(
             result_id=new_result_id(self.stage),
             scenario_id=scenario_id,
             region_id=region_id,
@@ -104,14 +105,14 @@ class BaseAgent(ABC):
             data_gaps=data_gaps or [],
             reproducibility=reproducibility,
         )
-        return envelope
 
-    def _build_evidence(self, description: str, source: str, uri: Optional[str] = None) -> Evidence:
+    def _build_evidence(self, description: str, source: str, uri: Optional[str] = None, page: Optional[int] = None) -> Evidence:
         return Evidence(
             evidence_id=f"{self.stage.value}-src",
             description=description,
             source=source,
             uri=uri,
+            page=page,
         )
 
     def _review_item(

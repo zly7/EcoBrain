@@ -7,6 +7,7 @@ __pycache__/
 local*
 repomix*
 别人支持*/
+multi_energy_agent/agent_refactor_code.md
 # C extensions
 *.so
 GPT5PRO*/

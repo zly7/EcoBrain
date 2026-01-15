@@ -1,26 +1,18 @@
-"""Multi-agent pipeline package generated per 指引.md."""
+"""multi_energy_agent package.
 
-from .graph import build_langgraph, run_job
-from .llm import StructuredLLMClient
-from .agents import (
-    BaselineAgent,
-    FinanceIntegratorAgent,
-    GeoResolverAgent,
-    MeasureScreenerAgent,
-    PolicyKnowledgeGraphAgent,
-    ReportOrchestratorAgent,
-)
-from .schemas import BlackboardState
+This package implements a report-first industrial-park agent system.
+
+Design principles:
+- Agent focuses on: description, report generation, Q&A interaction.
+- Complex math / optimization is out-of-scope for agents. If optimization is needed,
+  provide pre-computed results (CSV/Excel/JSON) and let the agent explain them.
+"""
+
+from .schemas import Stage, ResultEnvelope
+from .runner import run_scenario
 
 __all__ = [
-    "build_langgraph",
-    "run_job",
-    "StructuredLLMClient",
-    "BlackboardState",
-    "GeoResolverAgent",
-    "BaselineAgent",
-    "MeasureScreenerAgent",
-    "PolicyKnowledgeGraphAgent",
-    "FinanceIntegratorAgent",
-    "ReportOrchestratorAgent",
+    "Stage",
+    "ResultEnvelope",
+    "run_scenario",
 ]
