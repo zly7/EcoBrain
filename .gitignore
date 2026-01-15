@@ -6,6 +6,7 @@ __pycache__/
 *.xlsx
 local*
 repomix*
+别人支持*/
 # C extensions
 *.so
 GPT5PRO*/

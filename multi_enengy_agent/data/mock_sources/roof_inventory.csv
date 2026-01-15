@@ -1,5 +1,0 @@
-building_id,building_name,owner_enterprise_id,function,roof_area_m2,roof_type,roof_age_year,structure.load_limit_kg_m2,solar.shading_factor,solar.slope_deg,solar.azimuth_deg,grid.connection_distance_m,fire_code_ok,geometry_wkt,fire_issue
-BLDG_001,A区-1号厂房,ENT_001,生产,28000,metal,6,32,0.08,8,190,120,True,"POLYGON((120.700 31.309,120.701 31.309,120.701 31.310,120.700 31.310,120.700 31.309))",
-BLDG_002,A区-2号仓库,ENT_001,仓储,16000,concrete,12,25,0.12,2,175,80,True,"POLYGON((120.702 31.309,120.703 31.309,120.703 31.310,120.702 31.310,120.702 31.309))",
-BLDG_101,B区-烧结车间,ENT_002,生产,34000,metal,4,30,0.05,6,200,160,False,"POLYGON((120.706 31.312,120.707 31.312,120.707 31.313,120.706 31.313,120.706 31.312))",屋顶采光带需整改后方可施工
-BLDG_201,C区-机加车间,ENT_003,生产,12000,metal,9,28,0.1,10,185,60,True,"POLYGON((120.709 31.308,120.710 31.308,120.710 31.309,120.709 31.309,120.709 31.308))",
