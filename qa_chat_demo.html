@@ -1,0 +1,584 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>报告智能问答 - Multi Energy Agent</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            height: calc(100vh - 40px);
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 25px 30px;
+        }
+        
+        .header h1 {
+            font-size: 24px;
+            margin-bottom: 8px;
+        }
+        
+        .header p {
+            opacity: 0.9;
+            font-size: 14px;
+        }
+        
+        .scenario-selector {
+            padding: 20px 30px;
+            background: #f9fafb;
+            border-bottom: 1px solid #e5e7eb;
+        }
+        
+        .scenario-selector label {
+            display: block;
+            font-size: 14px;
+            font-weight: 600;
+            color: #374151;
+            margin-bottom: 8px;
+        }
+        
+        .scenario-selector select {
+            width: 100%;
+            padding: 10px 15px;
+            border: 1px solid #d1d5db;
+            border-radius: 8px;
+            font-size: 14px;
+            background: white;
+            cursor: pointer;
+        }
+        
+        .chat-container {
+            flex: 1;
+            overflow-y: auto;
+            padding: 30px;
+            background: #f9fafb;
+        }
+        
+        .message {
+            margin-bottom: 20px;
+            display: flex;
+            gap: 12px;
+        }
+        
+        .message.user {
+            flex-direction: row-reverse;
+        }
+        
+        .message-avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            flex-shrink: 0;
+        }
+        
+        .message.user .message-avatar {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        
+        .message.assistant .message-avatar {
+            background: #10b981;
+        }
+        
+        .message-content {
+            max-width: 70%;
+            padding: 15px 18px;
+            border-radius: 16px;
+            line-height: 1.6;
+            font-size: 14px;
+        }
+        
+        .message.user .message-content {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-bottom-right-radius: 4px;
+        }
+        
+        .message.assistant .message-content {
+            background: white;
+            color: #374151;
+            border: 1px solid #e5e7eb;
+            border-bottom-left-radius: 4px;
+        }
+        
+        .message-sources {
+            margin-top: 12px;
+            padding-top: 12px;
+            border-top: 1px solid #e5e7eb;
+            font-size: 12px;
+            color: #6b7280;
+        }
+        
+        .message-sources strong {
+            display: block;
+            margin-bottom: 6px;
+            color: #374151;
+        }
+        
+        .source-item {
+            background: #f3f4f6;
+            padding: 6px 10px;
+            border-radius: 6px;
+            margin-bottom: 4px;
+        }
+        
+        .suggestions {
+            padding: 15px 30px;
+            background: white;
+            border-top: 1px solid #e5e7eb;
+        }
+        
+        .suggestions-title {
+            font-size: 13px;
+            font-weight: 600;
+            color: #6b7280;
+            margin-bottom: 10px;
+        }
+        
+        .suggestion-chips {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+        
+        .suggestion-chip {
+            background: #f3f4f6;
+            border: 1px solid #e5e7eb;
+            padding: 8px 14px;
+            border-radius: 20px;
+            font-size: 13px;
+            color: #374151;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .suggestion-chip:hover {
+            background: #667eea;
+            color: white;
+            border-color: #667eea;
+        }
+        
+        .input-container {
+            padding: 20px 30px;
+            background: white;
+            border-top: 1px solid #e5e7eb;
+        }
+        
+        .input-wrapper {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+        }
+        
+        .input-wrapper input {
+            flex: 1;
+            padding: 12px 18px;
+            border: 1px solid #d1d5db;
+            border-radius: 24px;
+            font-size: 14px;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+        
+        .input-wrapper input:focus {
+            border-color: #667eea;
+        }
+        
+        .input-wrapper button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 24px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+        
+        .input-wrapper button:hover {
+            transform: scale(1.05);
+        }
+        
+        .input-wrapper button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .loading {
+            display: flex;
+            gap: 6px;
+            padding: 15px;
+        }
+        
+        .loading-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #667eea;
+            animation: bounce 1.4s infinite ease-in-out both;
+        }
+        
+        .loading-dot:nth-child(1) { animation-delay: -0.32s; }
+        .loading-dot:nth-child(2) { animation-delay: -0.16s; }
+        
+        @keyframes bounce {
+            0%, 80%, 100% { transform: scale(0); }
+            40% { transform: scale(1); }
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 60px 30px;
+            color: #9ca3af;
+        }
+        
+        .empty-state-icon {
+            font-size: 48px;
+            margin-bottom: 16px;
+        }
+        
+        .empty-state-text {
+            font-size: 16px;
+            margin-bottom: 8px;
+        }
+        
+        .empty-state-hint {
+            font-size: 14px;
+        }
+        
+        .confidence-badge {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-size: 11px;
+            font-weight: 600;
+            margin-left: 8px;
+        }
+        
+        .confidence-high { background: #d1fae5; color: #065f46; }
+        .confidence-medium { background: #fef3c7; color: #92400e; }
+        .confidence-low { background: #fee2e2; color: #991b1b; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>💬 报告智能问答</h1>
+            <p>基于生成的低碳路线图报告进行交互式问答</p>
+        </div>
+        
+        <div class="scenario-selector">
+            <label for="scenarioSelect">选择场景</label>
+            <select id="scenarioSelect" onchange="loadScenario()">
+                <option value="">-- 请选择场景 --</option>
+            </select>
+        </div>
+        
+        <div class="chat-container" id="chatContainer">
+            <div class="empty-state">
+                <div class="empty-state-icon">🤖</div>
+                <div class="empty-state-text">选择一个场景开始对话</div>
+                <div class="empty-state-hint">我可以回答关于报告的任何问题</div>
+            </div>
+        </div>
+        
+        <div class="suggestions" id="suggestionsContainer" style="display: none;">
+            <div class="suggestions-title">💡 建议问题</div>
+            <div class="suggestion-chips" id="suggestionChips"></div>
+        </div>
+        
+        <div class="input-container">
+            <div class="input-wrapper">
+                <input 
+                    type="text" 
+                    id="questionInput" 
+                    placeholder="输入您的问题..." 
+                    onkeypress="handleKeyPress(event)"
+                    disabled
+                />
+                <button onclick="askQuestion()" id="sendButton" disabled>发送</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = 'http://localhost:8000';
+        let currentScenarioId = null;
+        let messages = [];
+
+        // 加载场景列表
+        async function loadScenarios() {
+            try {
+                // 直接使用已知的场景ID（从文件系统）
+                const knownScenarios = [
+                    { scenario_id: 'demo-park', name: '示范园区综合能源规划' }
+                ];
+                
+                const select = document.getElementById('scenarioSelect');
+                select.innerHTML = '<option value="">-- 请选择场景 --</option>';
+                
+                knownScenarios.forEach(scenario => {
+                    const option = document.createElement('option');
+                    option.value = scenario.scenario_id;
+                    option.textContent = `${scenario.name} (${scenario.scenario_id})`;
+                    select.appendChild(option);
+                });
+                
+                // 尝试从API获取更多场景（如果有的话）
+                try {
+                    const response = await fetch(`${API_BASE}/api/v1/scenarios`);
+                    const scenarios = await response.json();
+                    
+                    // 添加API中的场景（避免重复）
+                    const existingIds = knownScenarios.map(s => s.scenario_id);
+                    scenarios.forEach(scenario => {
+                        if (!existingIds.includes(scenario.scenario_id) && scenario.status === 'completed') {
+                            const option = document.createElement('option');
+                            option.value = scenario.scenario_id;
+                            option.textContent = `${scenario.scenario_id} (${new Date(scenario.created_at).toLocaleString('zh-CN')})`;
+                            select.appendChild(option);
+                        }
+                    });
+                } catch (apiError) {
+                    console.log('无法从API加载场景列表，使用本地场景');
+                }
+            } catch (error) {
+                console.error('加载场景列表失败:', error);
+            }
+        }
+
+        // 加载场景
+        async function loadScenario() {
+            const select = document.getElementById('scenarioSelect');
+            currentScenarioId = select.value;
+            
+            if (!currentScenarioId) {
+                document.getElementById('questionInput').disabled = true;
+                document.getElementById('sendButton').disabled = true;
+                document.getElementById('suggestionsContainer').style.display = 'none';
+                return;
+            }
+            
+            // 启用输入
+            document.getElementById('questionInput').disabled = false;
+            document.getElementById('sendButton').disabled = false;
+            
+            // 清空对话
+            messages = [];
+            renderMessages();
+            
+            // 添加欢迎消息
+            addMessage('assistant', `您好！我是报告分析助手。我已加载场景 "${currentScenarioId}" 的报告，请问有什么可以帮您的？`);
+            
+            // 加载建议问题
+            await loadSuggestions();
+        }
+
+        // 加载建议问题
+        async function loadSuggestions() {
+            try {
+                const response = await fetch(`${API_BASE}/api/v1/scenarios/${currentScenarioId}/qa/suggestions`);
+                const data = await response.json();
+                
+                const container = document.getElementById('suggestionsContainer');
+                const chipsContainer = document.getElementById('suggestionChips');
+                
+                if (data.suggestions && data.suggestions.length > 0) {
+                    container.style.display = 'block';
+                    chipsContainer.innerHTML = '';
+                    
+                    data.suggestions.forEach(suggestion => {
+                        const chip = document.createElement('div');
+                        chip.className = 'suggestion-chip';
+                        chip.textContent = suggestion;
+                        chip.onclick = () => {
+                            document.getElementById('questionInput').value = suggestion;
+                            askQuestion();
+                        };
+                        chipsContainer.appendChild(chip);
+                    });
+                } else {
+                    container.style.display = 'none';
+                }
+            } catch (error) {
+                console.error('加载建议问题失败:', error);
+            }
+        }
+
+        // 添加消息
+        function addMessage(role, content, sources = null, confidence = null) {
+            messages.push({ role, content, sources, confidence });
+            renderMessages();
+        }
+
+        // 渲染消息
+        function renderMessages() {
+            const container = document.getElementById('chatContainer');
+            
+            if (messages.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-state-icon">🤖</div>
+                        <div class="empty-state-text">选择一个场景开始对话</div>
+                        <div class="empty-state-hint">我可以回答关于报告的任何问题</div>
+                    </div>
+                `;
+                return;
+            }
+            
+            container.innerHTML = '';
+            
+            messages.forEach(msg => {
+                const messageDiv = document.createElement('div');
+                messageDiv.className = `message ${msg.role}`;
+                
+                const avatar = document.createElement('div');
+                avatar.className = 'message-avatar';
+                avatar.textContent = msg.role === 'user' ? '👤' : '🤖';
+                
+                const contentDiv = document.createElement('div');
+                contentDiv.className = 'message-content';
+                
+                let html = msg.content;
+                
+                // 添加置信度标签
+                if (msg.confidence !== null && msg.role === 'assistant') {
+                    let confidenceClass = 'confidence-low';
+                    let confidenceText = '低';
+                    if (msg.confidence >= 0.7) {
+                        confidenceClass = 'confidence-high';
+                        confidenceText = '高';
+                    } else if (msg.confidence >= 0.5) {
+                        confidenceClass = 'confidence-medium';
+                        confidenceText = '中';
+                    }
+                    html += `<span class="confidence-badge ${confidenceClass}">置信度: ${confidenceText}</span>`;
+                }
+                
+                // 添加来源
+                if (msg.sources && msg.sources.length > 0) {
+                    html += '<div class="message-sources"><strong>📚 信息来源：</strong>';
+                    msg.sources.forEach(source => {
+                        if (source.type === 'measure') {
+                            html += `<div class="source-item">措施: ${source.name}</div>`;
+                        } else if (source.type === 'policy') {
+                            html += `<div class="source-item">政策: ${source.citation}</div>`;
+                        } else if (source.type === 'data_gap') {
+                            html += `<div class="source-item">数据缺口: ${source.missing}</div>`;
+                        }
+                    });
+                    html += '</div>';
+                }
+                
+                contentDiv.innerHTML = html;
+                
+                messageDiv.appendChild(avatar);
+                messageDiv.appendChild(contentDiv);
+                container.appendChild(messageDiv);
+            });
+            
+            // 滚动到底部
+            container.scrollTop = container.scrollHeight;
+        }
+
+        // 显示加载动画
+        function showLoading() {
+            const container = document.getElementById('chatContainer');
+            const loadingDiv = document.createElement('div');
+            loadingDiv.className = 'message assistant';
+            loadingDiv.id = 'loadingMessage';
+            loadingDiv.innerHTML = `
+                <div class="message-avatar">🤖</div>
+                <div class="message-content">
+                    <div class="loading">
+                        <div class="loading-dot"></div>
+                        <div class="loading-dot"></div>
+                        <div class="loading-dot"></div>
+                    </div>
+                </div>
+            `;
+            container.appendChild(loadingDiv);
+            container.scrollTop = container.scrollHeight;
+        }
+
+        function hideLoading() {
+            const loading = document.getElementById('loadingMessage');
+            if (loading) {
+                loading.remove();
+            }
+        }
+
+        // 提问
+        async function askQuestion() {
+            const input = document.getElementById('questionInput');
+            const question = input.value.trim();
+            
+            if (!question || !currentScenarioId) return;
+            
+            // 添加用户消息
+            addMessage('user', question);
+            input.value = '';
+            
+            // 显示加载
+            showLoading();
+            
+            try {
+                const response = await fetch(
+                    `${API_BASE}/api/v1/scenarios/${currentScenarioId}/qa?question=${encodeURIComponent(question)}`,
+                    { method: 'POST' }
+                );
+                const data = await response.json();
+                
+                hideLoading();
+                
+                // 添加助手回复
+                addMessage('assistant', data.answer, data.sources, data.confidence);
+            } catch (error) {
+                hideLoading();
+                addMessage('assistant', '抱歉，处理您的问题时出现错误。请稍后重试。');
+                console.error('提问失败:', error);
+            }
+        }
+
+        // 处理回车键
+        function handleKeyPress(event) {
+            if (event.key === 'Enter') {
+                askQuestion();
+            }
+        }
+
+        // 页面加载时初始化
+        window.onload = () => {
+            loadScenarios();
+        };
+    </script>
+</body>
+</html>

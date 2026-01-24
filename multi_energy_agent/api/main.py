@@ -6,9 +6,11 @@ import asyncio
 import logging
 from typing import List
 
-from fastapi import FastAPI, HTTPException, WebSocket
+from fastapi import FastAPI, HTTPException, WebSocket, Query
+from fastapi.middleware.cors import CORSMiddleware
 
 from ..schemas import Stage
+from ..llm import StructuredLLMClient
 from .models import (
     ScenarioCreateResponse,
     ScenarioDetailResponse,
@@ -17,6 +19,7 @@ from .models import (
     ScenarioStatus,
     ScenarioSummary,
 )
+from .qa import ReportQAService
 from .service import ScenarioEventPublisher, ScenarioExecutor
 from .store import ScenarioRun, ScenarioRunStore
 from .websocket import WebSocketManager
@@ -25,6 +28,7 @@ logger = logging.getLogger(__name__)
 
 tags_metadata = [
     {"name": "scenarios", "description": "Create and inspect multi-energy scenario runs"},
+    {"name": "qa", "description": "Interactive Q&A over generated reports"},
 ]
 
 app = FastAPI(
@@ -33,10 +37,23 @@ app = FastAPI(
     openapi_tags=tags_metadata,
 )
 
+# 添加CORS中间件支持前端访问
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # 允许所有来源，生产环境应该限制具体域名
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
 store = ScenarioRunStore()
 ws_manager = WebSocketManager()
 publisher = ScenarioEventPublisher(store, ws_manager)
 executor = ScenarioExecutor(store, publisher)
+
+# 初始化LLM客户端用于Q&A
+llm_client = StructuredLLMClient()
+qa_service = ReportQAService(llm_client=llm_client)
 
 
 @app.on_event("startup")
@@ -133,3 +150,17 @@ async def scenario_progress(run_id: str, websocket: WebSocket) -> None:
         pass
     finally:
         ws_manager.disconnect(run_id, websocket)
+
+
+@app.post("/api/v1/scenarios/{scenario_id}/qa", tags=["qa"])
+async def ask_question(scenario_id: str, question: str = Query(..., description="Question to ask")) -> dict:
+    """Ask a question about a completed scenario report."""
+    result = qa_service.answer_question(question, scenario_id)
+    return result
+
+
+@app.get("/api/v1/scenarios/{scenario_id}/qa/suggestions", tags=["qa"])
+async def get_question_suggestions(scenario_id: str) -> dict:
+    """Get suggested questions for a scenario."""
+    suggestions = qa_service.get_suggested_questions(scenario_id)
+    return {"scenario_id": scenario_id, "suggestions": suggestions}

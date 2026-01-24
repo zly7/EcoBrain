@@ -443,6 +443,20 @@ class ReportOrchestratorAgent(BaseAgent):
         inventory = (intake_artifacts.get("inventory") or {}).get("files") or []
         csv_profiles = intake_artifacts.get("csv_profiles") or []
         pdf_evidence = insight_artifacts.get("pdf_evidence_items") or []
+        
+        # Extract measures from insight artifacts
+        measures = insight_artifacts.get("measures") or []
+        
+        # Extract policies from policy_artifacts
+        policy_artifacts = insight_artifacts.get("policy_artifacts") or {}
+        policies = policy_artifacts.get("matched_clauses") or []
+        
+        # Extract baseline from insight artifacts
+        baseline = insight_artifacts.get("baseline") or {}
+        
+        # Extract data gaps - need to get from state or reconstruct
+        # For now, we'll leave it empty and populate from review_items if needed
+        data_gaps_list = []
 
         return {
             "scenario_id": scenario.get("scenario_id"),
@@ -450,5 +464,9 @@ class ReportOrchestratorAgent(BaseAgent):
             "inventory": inventory,
             "csv_profiles": csv_profiles,
             "pdf_evidence_items": pdf_evidence,
+            "measures": measures,
+            "policies": policies,
+            "baseline": baseline,
+            "data_gaps": data_gaps_list,
             "note": "This file is designed for future QA/RAG indexing; not a replacement for a vector DB.",
         }
