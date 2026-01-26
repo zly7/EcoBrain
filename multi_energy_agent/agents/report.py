@@ -195,7 +195,7 @@ class ReportOrchestratorAgent(BaseAgent):
         summary_prompt = self._summary_prompt(scenario, baseline, measures, policy, finance, data_gaps)
         summary_fallback = self._summary_fallback(scenario, baseline, measures, policy, finance, data_gaps)
         executive_summary = self.llm.markdown(
-            system_prompt="你是工业园区低碳路线图撰写助手。输出结构化中文 Markdown，长度不少于 250 字。",
+            system_prompt="你是资深的多能源园区低碳规划专家，专门撰写工业园区碳中和技术经济分析报告。请输出结构化的中文 Markdown 执行摘要，长度不少于 300 字，确保内容专业、数据准确、建议可操作。",
             user_prompt=summary_prompt,
             fallback=summary_fallback,
         )
@@ -443,6 +443,20 @@ class ReportOrchestratorAgent(BaseAgent):
         inventory = (intake_artifacts.get("inventory") or {}).get("files") or []
         csv_profiles = intake_artifacts.get("csv_profiles") or []
         pdf_evidence = insight_artifacts.get("pdf_evidence_items") or []
+        
+        # Extract measures from insight artifacts
+        measures = insight_artifacts.get("measures") or []
+        
+        # Extract policies from policy_artifacts
+        policy_artifacts = insight_artifacts.get("policy_artifacts") or {}
+        policies = policy_artifacts.get("matched_clauses") or []
+        
+        # Extract baseline from insight artifacts
+        baseline = insight_artifacts.get("baseline") or {}
+        
+        # Extract data gaps - need to get from state or reconstruct
+        # For now, we'll leave it empty and populate from review_items if needed
+        data_gaps_list = []
 
         return {
             "scenario_id": scenario.get("scenario_id"),
@@ -450,5 +464,9 @@ class ReportOrchestratorAgent(BaseAgent):
             "inventory": inventory,
             "csv_profiles": csv_profiles,
             "pdf_evidence_items": pdf_evidence,
+            "measures": measures,
+            "policies": policies,
+            "baseline": baseline,
+            "data_gaps": data_gaps_list,
             "note": "This file is designed for future QA/RAG indexing; not a replacement for a vector DB.",
         }

@@ -316,7 +316,7 @@ class DataIntakeAgent(BaseAgent):
         prompt = self._csv_description_prompt(prof)
         fallback = self._csv_description_fallback(prof)
         desc_md = self.llm.markdown(
-            system_prompt="你是数据分析助手。你的任务是把数据画像写成简洁、可审计的中文 Markdown 描述。",
+            system_prompt="你是多能源园区数据分析专家，专门从事工业园区能源数据的质量评估和业务价值分析。请将数据画像转化为专业、可审计的中文 Markdown 描述，为后续的碳排放分析和减排规划提供数据基础。",
             user_prompt=prompt,
             fallback=fallback,
         )

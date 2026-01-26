@@ -567,7 +567,7 @@ class InsightSynthesisAgent(BaseAgent):
             "- 建议在能流表中包含：from/to/carrier/value/unit/efficiency/loss 等字段。\n"
         )
         summary = self.llm.markdown(
-            system_prompt="你是能流分析助手，只输出 Markdown。",
+            system_prompt="你是资深的工业园区能流分析专家，专门从事多能源系统的技术经济分析。请输出专业的 Markdown 分析报告。",
             user_prompt=prompt,
             fallback=fallback,
         )
@@ -616,7 +616,7 @@ class InsightSynthesisAgent(BaseAgent):
             "- 当前仅有预览，建议补充完整年度现金流与关键假设（折现率、寿命期、税费等）。\n"
         )
         summary = self.llm.markdown(
-            system_prompt="你是现金流解释助手，只输出 Markdown。",
+            system_prompt="你是资深的工业园区经济性分析专家，专门从事多能源项目的财务评估和投资分析。请输出专业的 Markdown 分析报告。",
             user_prompt=prompt,
             fallback=fallback,
         )

@@ -13,7 +13,7 @@ from functools import lru_cache
 from pathlib import Path
 
 _KG_MODULE_NAME = "knowledge_graph"
-_AGENT_MODULE_NAME = "multi_enengy_agent"
+_AGENT_MODULE_NAME = "multi_energy_agent"
 
 
 @lru_cache()
@@ -33,7 +33,7 @@ def resolve_module_root(module_name: str) -> Path:
 
 @lru_cache()
 def resolve_package_root() -> Path:
-    """Return the agent package root (`multi_enengy_agent`)."""
+    """Return the agent package root (`multi_energy_agent`)."""
     return resolve_module_root(_AGENT_MODULE_NAME)
 
 
