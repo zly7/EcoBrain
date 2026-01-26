@@ -195,7 +195,7 @@ class ReportOrchestratorAgent(BaseAgent):
         summary_prompt = self._summary_prompt(scenario, baseline, measures, policy, finance, data_gaps)
         summary_fallback = self._summary_fallback(scenario, baseline, measures, policy, finance, data_gaps)
         executive_summary = self.llm.markdown(
-            system_prompt="你是工业园区低碳路线图撰写助手。输出结构化中文 Markdown，长度不少于 250 字。",
+            system_prompt="你是资深的多能源园区低碳规划专家，专门撰写工业园区碳中和技术经济分析报告。请输出结构化的中文 Markdown 执行摘要，长度不少于 300 字，确保内容专业、数据准确、建议可操作。",
             user_prompt=summary_prompt,
             fallback=summary_fallback,
         )
