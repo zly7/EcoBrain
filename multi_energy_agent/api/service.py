@@ -11,6 +11,8 @@ from typing import Any, Dict, Optional
 from ..agents import DataIntakeAgent, InsightSynthesisAgent, ReportOrchestratorAgent
 from ..llm import StructuredLLMClient
 from ..schemas import Stage
+from ..tools import default_tool_registry
+from ..utils.logging import init_run_context
 from .models import ScenarioStatus
 from .store import ScenarioRun, ScenarioRunStore
 from .websocket import WebSocketManager
@@ -81,16 +83,30 @@ class ScenarioExecutor:
         self._publisher.emit(run_id, "run_completed", message="Scenario execution finished", payload=payload)
 
     def _execute_pipeline(self, run: ScenarioRun) -> Dict[str, Any]:
+        # Per-run context (logs + output dir)
+        raw_id = str(((run.scenario or {}).get("scenario_id")) or "default-scenario")
+        safe_id = "".join(ch if ch.isalnum() or ch in "._-" else "-" for ch in raw_id).strip("-") or "default-scenario"
+        output_dir = f"{run.output_root}/{safe_id}"
+
+        run_ctx = init_run_context(scenario_id=safe_id, output_dir=output_dir)
+
+        # Tool registry (centralized)
+        tools = default_tool_registry()
+
         llm: Optional[StructuredLLMClient] = None
         try:
-            llm = StructuredLLMClient()
+            llm = StructuredLLMClient(run_context=run_ctx)
         except Exception as exc:  # pylint: disable=broad-except
-            logger.warning("LLM client initialization failed, continuing without LLM: %s", exc)
+            run_ctx.logger.warning("LLM client initialization failed, continuing without LLM: %s", exc)
+            llm = StructuredLLMClient(run_context=run_ctx)
 
         state: Dict[str, Any] = {
             "selection": run.selection or {},
             "scenario": run.scenario or {},
             "inputs": run.inputs or {},
+            "output_dir": output_dir,
+            "run_context": run_ctx,
+            "tools": tools,
             "envelopes": {},
             "review_items": [],
         }

@@ -30,6 +30,8 @@ from .base import AgentRunResult, BaseAgent
 from ..llm import StructuredLLMClient
 from ..planning import PlanManager
 from ..schemas import Assumption, DataGap, Evidence, Stage
+from ..tools import default_tool_registry
+from ..utils.logging import get_run_context
 
 
 # ---------- shared plan tasks (full pipeline) ----------
@@ -99,6 +101,15 @@ class DataIntakeAgent(BaseAgent):
         artifacts_dir = out_dir / "artifacts"
         artifacts_dir.mkdir(parents=True, exist_ok=True)
 
+        run_ctx = get_run_context(state)
+        logger = run_ctx.logger if run_ctx else None
+
+        # tool registry (centralized)
+        tools = state.get("tools")
+        if tools is None:
+            tools = default_tool_registry()
+            state["tools"] = tools
+
         data_gaps: List[DataGap] = []
 
         # ---- T1: inventory ----
@@ -114,7 +125,126 @@ class DataIntakeAgent(BaseAgent):
             )
         plan.mark_done("T1", f"inventory 共 {len(inventory['files'])} 个文件")
 
-        # Save inventory
+        # ---- built-in back-data materialize (FHD + LYX + eco_knowledge_graph) ----
+        # These data are shipped in-repo under other_back_data/ and eco_knowledge_graph/.
+        selection = state.get("selection") or {}
+        meta = selection.get("metadata") or {}
+        filters = {
+            "province": meta.get("province") or meta.get("province_name") or "",
+            "city": meta.get("city") or meta.get("city_name") or "",
+            "district": meta.get("district") or meta.get("county") or "",
+            "park_name_contains": meta.get("park_name") or meta.get("park") or "",
+            "industry_keywords": meta.get("industry_keywords") or meta.get("industry_list") or meta.get("industries") or [],
+        }
+
+        plan.append_log("Back-data materialize: fhd / lyx / eco_knowledge_graph")
+
+        fhd_tool = tools.call(
+            "load_fhd_back_data",
+            {
+                "output_dir": str(out_dir),
+                "filters": filters,
+                "max_matched_rows": 5000,
+                "include_aoi_summary": True,
+                "aoi_compute_area_km2": False,
+            },
+        )
+        if logger:
+            logger.info("tool load_fhd_back_data: ok=%s elapsed_ms=%s", fhd_tool.get("ok"), fhd_tool.get("elapsed_ms"))
+
+        fhd_data = fhd_tool.get("data") or {}
+        if not fhd_data.get("ok"):
+            data_gaps.append(
+                DataGap(
+                    missing="fhd_back_data",
+                    impact=f"FHD 园区名录/AOI 载入失败：{(fhd_data.get('error') or {}).get('message','unknown')}",
+                    severity="medium",
+                )
+            )
+
+        # Use FHD matched industry distribution as weights for LYX scoring
+        industry_weights = {}
+        try:
+            top_inds = (fhd_data.get("metrics") or {}).get("matched_industry_distribution_top") or []
+            for name, cnt in top_inds[:12]:
+                if str(name).strip() and float(cnt) > 0:
+                    industry_weights[str(name)] = float(cnt)
+        except Exception:
+            industry_weights = {}
+
+        # If no matched industries, fallback to filter keywords
+        if not industry_weights:
+            kws = filters.get("industry_keywords") or []
+            if isinstance(kws, str):
+                kws = [kws]
+            for k in kws[:12]:
+                if str(k).strip():
+                    industry_weights[str(k)] = 1.0
+
+        lyx_tool = tools.call(
+            "load_lyx_energy_scores",
+            {
+                "output_dir": str(out_dir),
+                "industry_weights": industry_weights,
+                "industry_keywords": list(industry_weights.keys()),
+            },
+        )
+        if logger:
+            logger.info("tool load_lyx_energy_scores: ok=%s elapsed_ms=%s", lyx_tool.get("ok"), lyx_tool.get("elapsed_ms"))
+
+        lyx_data = lyx_tool.get("data") or {}
+        if not lyx_data.get("ok"):
+            data_gaps.append(
+                DataGap(
+                    missing="lyx_back_data",
+                    impact=f"LYX 行业多能倾向推断失败：{(lyx_data.get('error') or {}).get('message','unknown')}",
+                    severity="medium",
+                )
+            )
+
+        eco_tool = tools.call(
+            "materialize_eco_knowledge_graph",
+            {
+                "output_dir": str(out_dir),
+                "chunk_size": 600,
+                "chunk_overlap": 120,
+            },
+        )
+        if logger:
+            logger.info(
+                "tool materialize_eco_knowledge_graph: ok=%s elapsed_ms=%s", eco_tool.get("ok"), eco_tool.get("elapsed_ms")
+            )
+
+        eco_data = eco_tool.get("data") or {}
+        if not eco_data.get("ok"):
+            data_gaps.append(
+                DataGap(
+                    missing="eco_knowledge_graph",
+                    impact=f"eco_knowledge_graph 文档索引构建失败：{(eco_data.get('error') or {}).get('message','unknown')}",
+                    severity="low",
+                )
+            )
+
+        # Expand inventory to include these built-in sources for auditability
+        try:
+            for p in (fhd_data.get("inventory_files") or []):
+                inventory["files"].append({"type": "back_data_fhd", "path": p, "size_bytes": os.path.getsize(p) if os.path.exists(p) else None})
+            for p in (lyx_data.get("inventory_files") or []):
+                inventory["files"].append({"type": "back_data_lyx", "path": p, "size_bytes": os.path.getsize(p) if os.path.exists(p) else None})
+            for p in (eco_data.get("inventory_files") or []):
+                inventory["files"].append({"type": "eco_knowledge_graph", "path": p, "size_bytes": os.path.getsize(p) if os.path.exists(p) else None})
+        except Exception:
+            pass
+
+        # Optionally profile the small generated CSV (matched parks)
+        try:
+            matched_csv = (fhd_data.get("artifacts") or {}).get("matched_parks_csv")
+            if matched_csv and os.path.exists(str(matched_csv)):
+                csv_paths = csv_paths + [str(matched_csv)]
+        except Exception:
+            pass
+
+        # Save inventory (after adding built-in sources)
         (artifacts_dir / "inventory.json").write_text(json.dumps(inventory, ensure_ascii=False, indent=2), encoding="utf-8")
 
         # ---- T2: CSV profiling ----
@@ -189,6 +319,10 @@ class DataIntakeAgent(BaseAgent):
             "csv_profiled": len(csv_profiles),
             "pdf_parsed": len(pdf_artifacts),
             "excel_parsed": len(excel_artifacts),
+            "back_data_fhd_ok": bool(fhd_data.get("ok")) if isinstance(fhd_data, dict) else False,
+            "back_data_lyx_ok": bool(lyx_data.get("ok")) if isinstance(lyx_data, dict) else False,
+            "back_data_eco_kg_ok": bool(eco_data.get("ok")) if isinstance(eco_data, dict) else False,
+            "fhd_matched_parks": (fhd_data.get("metrics") or {}).get("matched_parks") if isinstance(fhd_data, dict) else None,
         }
 
         artifacts = {
@@ -199,6 +333,31 @@ class DataIntakeAgent(BaseAgent):
             "csv_descriptions": csv_descriptions,
             "pdf_artifacts": pdf_artifacts,
             "excel_artifacts": excel_artifacts,
+            "back_data": {
+                "fhd": fhd_data,
+                "lyx": lyx_data,
+                "eco_knowledge_graph": eco_data,
+                "tool_calls": [
+                    {
+                        "tool_call_id": fhd_tool.get("tool_call_id"),
+                        "name": fhd_tool.get("name"),
+                        "ok": fhd_tool.get("ok"),
+                        "elapsed_ms": fhd_tool.get("elapsed_ms"),
+                    },
+                    {
+                        "tool_call_id": lyx_tool.get("tool_call_id"),
+                        "name": lyx_tool.get("name"),
+                        "ok": lyx_tool.get("ok"),
+                        "elapsed_ms": lyx_tool.get("elapsed_ms"),
+                    },
+                    {
+                        "tool_call_id": eco_tool.get("tool_call_id"),
+                        "name": eco_tool.get("name"),
+                        "ok": eco_tool.get("ok"),
+                        "elapsed_ms": eco_tool.get("elapsed_ms"),
+                    },
+                ],
+            },
         }
 
         assumptions = [

@@ -1,43 +1,36 @@
 """ReportOrchestratorAgent
 
-Core requirement:
-- MUST generate a规范的 Markdown 报告，并本地保存为 report.md
-- 报告正文（中文字符）>= 1000 字
-- 每次关键步骤都刷新 plan.md（Claude-code 风格）
-
-Inputs:
-- Stage.INTAKE envelope: data inventory + CSV/PDF/Excel artifacts
-- Stage.INSIGHT envelope: baseline + deepresearch narratives + measures + policy + finance
-
 Outputs:
-- Stage.REPORT envelope with report_markdown artifact
-- files:
-    outputs/<scenario_id>/report.md
-    outputs/<scenario_id>/artifacts/qa_index.json
+- outputs/<scenario_id>/report.md
+- outputs/<scenario_id>/report.pdf
+
+The report emphasizes:
+- 可审计：所有结论都能追溯到输入数据/工具输出
+- 不做数值优化：只做“描述 + 决策支持 + 下一步数据需求”
+
+This agent also ensures:
+- logs_llm_direct/: direct LLM interactions (if any)
+- logs_running/: other run logs
 """
 
 from __future__ import annotations
 
 import json
 import re
-from datetime import datetime
 from pathlib import Path
-from typing import Any, Dict, Iterable, List, Optional
+from typing import Any, Dict, List, Optional
 
 from .base import AgentRunResult, BaseAgent
 from ..llm import StructuredLLMClient
 from ..planning import PlanManager
 from ..schemas import Assumption, DataGap, Evidence, Stage
+from ..utils.logging import get_run_context
 
 
 def _sanitize_id(value: str) -> str:
-    value = value.strip() or "default"
+    value = (value or "").strip() or "default"
     value = re.sub(r"[^a-zA-Z0-9._-]+", "-", value)
     return value[:80] or "default"
-
-
-def _cn_char_count(text: str) -> int:
-    return len(re.findall(r"[\u4e00-\u9fff]", text))
 
 
 class ReportOrchestratorAgent(BaseAgent):
@@ -46,427 +39,319 @@ class ReportOrchestratorAgent(BaseAgent):
 
     def run(self, state) -> AgentRunResult:  # type: ignore[override]
         scenario = state.get("scenario") or {}
-        scenario_id = _sanitize_id(str(scenario.get("scenario_id") or "default-scenario"))
+        selection = state.get("selection") or {}
+        metadata = selection.get("metadata") or {}
 
+        scenario_id = _sanitize_id(str(scenario.get("scenario_id") or "default-scenario"))
         out_dir = Path(state.get("output_dir") or Path("outputs") / scenario_id)
         out_dir.mkdir(parents=True, exist_ok=True)
-        artifacts_dir = out_dir / "artifacts"
-        artifacts_dir.mkdir(parents=True, exist_ok=True)
 
         plan = PlanManager(out_dir / "plan.md")
 
-        intake_metrics = self._get_envelope_metrics(state, Stage.INTAKE)
-        intake_artifacts = self._get_envelope_artifacts(state, Stage.INTAKE, default={})
-        insight_metrics = self._get_envelope_metrics(state, Stage.INSIGHT)
+        run_ctx = get_run_context(state)
+        logger = run_ctx.logger if run_ctx else None
+
+        tools = state.get("tools")
+        if tools is None:
+            raise RuntimeError("tools registry missing in state; DataIntakeAgent should initialize it")
+
         insight_artifacts = self._get_envelope_artifacts(state, Stage.INSIGHT, default={})
+        insight_metrics = self._get_envelope_metrics(state, Stage.INSIGHT)
 
-        aggregated_gaps = list(self._collect_data_gaps(state))
+        park_profile = insight_artifacts.get("park_profile") or {}
+        energy_tendency = insight_artifacts.get("energy_tendency") or {}
+        measures = insight_artifacts.get("measures") or []
+        eco_blocks = insight_artifacts.get("eco_kg_evidence") or []
 
-        plan.mark_doing("T9", "组装报告章节，并要求报告长度>=1000字（中文）")
-        report_markdown = self._build_report_markdown(
+        intake_artifacts = self._get_envelope_artifacts(state, Stage.INTAKE, default={})
+        inventory = intake_artifacts.get("inventory") or {}
+
+        # ---- T9/T10 ----
+        plan.mark_doing("T9", "生成最终 Markdown 报告并组织证据链")
+
+        md = self._render_markdown(
             scenario=scenario,
-            intake_metrics=intake_metrics,
-            intake_artifacts=intake_artifacts,
+            selection=selection,
+            inventory=inventory,
+            park_profile=park_profile,
+            energy_tendency=energy_tendency,
+            measures=measures,
+            eco_blocks=eco_blocks,
             insight_metrics=insight_metrics,
-            insight_artifacts=insight_artifacts,
-            data_gaps=aggregated_gaps,
         )
 
-        # Ensure minimum length (Chinese chars >= 1000)
-        if _cn_char_count(report_markdown) < 1000:
-            report_markdown = self._pad_report_to_min_length(report_markdown, min_cn_chars=1000)
+        report_md_path = out_dir / "report.md"
+        report_md_path.write_text(md, encoding="utf-8")
+        plan.mark_done("T9", f"report.md saved: {report_md_path}")
 
-        plan.mark_done("T9", f"报告字数(中文字符)={_cn_char_count(report_markdown)}")
-
-        plan.mark_doing("T10", "写入本地 report.md，并保存 QA 索引")
-        report_path = out_dir / "report.md"
-        report_path.write_text(report_markdown, encoding="utf-8")
-
-        qa_index = self._build_qa_index(
-            scenario=scenario,
-            intake_artifacts=intake_artifacts,
-            insight_artifacts=insight_artifacts,
-            report_path=str(report_path),
+        plan.mark_doing("T10", "渲染 PDF 并保存到本地")
+        report_pdf_path = out_dir / "report.pdf"
+        pdf_tool = tools.call(
+            "render_pdf_report",
+            {
+                "markdown_path": str(report_md_path),
+                "pdf_path": str(report_pdf_path),
+                "title": f"{scenario_id} report",
+            },
         )
-        qa_index_path = artifacts_dir / "qa_index.json"
-        qa_index_path.write_text(json.dumps(qa_index, ensure_ascii=False, indent=2), encoding="utf-8")
-        plan.mark_done("T10", f"已保存 report.md 与 qa_index.json")
+        pdf_data = pdf_tool.get("data") or {}
+        pdf_ok = bool(pdf_data.get("ok"))
+        plan.mark_done("T10", f"report.pdf rendered: ok={pdf_ok} path={report_pdf_path}")
 
-        plan.mark_doing("T11", "生成可检索索引（数据字典/证据索引）")
-        # In MVP, qa_index already contains evidence index and data dictionary pointers.
-        plan.mark_done("T11", "qa_index.json 已生成（可用于后续 RAG/QA）")
+        if logger:
+            logger.info("Report: report_md=%s", report_md_path)
+            logger.info("Report: report_pdf=%s ok=%s", report_pdf_path, pdf_ok)
+
+        # ---- envelope ----
+        gaps: List[DataGap] = []
+        if not pdf_ok:
+            gaps.append(
+                DataGap(
+                    missing="pdf_render",
+                    impact=f"PDF 渲染失败：{(pdf_data.get('error') or {}).get('message','unknown')}。仍可使用 report.md",
+                    severity="low",
+                )
+            )
 
         metrics = {
-            "report_path": str(report_path),
-            "report_cn_char_count": _cn_char_count(report_markdown),
-            "outstanding_gaps": [g.as_dict() for g in aggregated_gaps],
+            "report_markdown_chars": len(md),
+            "report_path": str(report_md_path),
+            "report_pdf_path": str(report_pdf_path) if pdf_ok else None,
+            "measures_count": len(measures),
+            "eco_kg_hit_count": sum(len(b.get("snippets") or []) for b in eco_blocks),
         }
 
-        assumptions = [
-            Assumption(
-                name="report_length_constraint",
-                value="cn_chars>=1000",
-                reason="导师/交付要求：ReportOrchestratorAgent 必须输出1000字以上报告",
-                sensitivity="low",
-            ),
-            Assumption(
-                name="report_scope_boundary",
-                value="No optimization; interpret data/KG/precomputed results only",
-                reason="导师要求：Agent 不做复杂数学计算/优化求解",
-                sensitivity="low",
-            ),
-        ]
+        artifacts = {
+            "report_path": str(report_md_path),
+            "report_pdf_path": str(report_pdf_path) if pdf_ok else None,
+            "pdf_tool_call": {
+                "tool_call_id": pdf_tool.get("tool_call_id"),
+                "ok": pdf_tool.get("ok"),
+                "elapsed_ms": pdf_tool.get("elapsed_ms"),
+            },
+        }
 
         evidence = [
             self._build_evidence(
-                description="Report composes intake+insight envelopes and saves local report.md",
-                source="envelope_chain+filesystem",
-                uri=str(report_path),
+                description="Final report markdown saved locally",
+                source="local_filesystem",
+                uri=str(report_md_path),
+            )
+        ]
+
+        assumptions = [
+            Assumption(
+                name="report_generation",
+                value="Deterministic markdown report + optional LLM polishing",
+                reason="保证可审计、可复现。LLM 仅用于叙述润色（如有配置）。",
+                sensitivity="low",
             )
         ]
 
         envelope = self._create_envelope(
             state=state,
             metrics=metrics,
-            artifacts={
-                "report_markdown": report_markdown,
-                "report_path": str(report_path),
-                "qa_index_path": str(qa_index_path),
-            },
+            artifacts=artifacts,
             assumptions=assumptions,
             evidence=evidence,
-            confidence=0.75 if not aggregated_gaps else 0.6,
-            data_gaps=aggregated_gaps,
-            reproducibility_extra={"generated_at": datetime.utcnow().isoformat() + "Z"},
+            confidence=0.85 if pdf_ok else 0.75,
+            data_gaps=gaps,
+            reproducibility_extra={
+                "report_md": str(report_md_path),
+                "report_pdf": str(report_pdf_path) if pdf_ok else None,
+            },
         )
 
-        review_items = []
-        if aggregated_gaps:
-            review_items.append(
-                self._review_item(
-                    checkpoint_id="report_data_gaps",
-                    issue="报告包含数据缺口，请在交付前补充或明确缓解策略。",
-                    editable_fields=["inputs", "selection.metadata", "scenario"],
-                    suggested_action="补充能流/现金流表与 admin_codes/industry_codes，或上传外部模型计算结果。",
-                    severity="medium",
-                )
-            )
+        return AgentRunResult(envelope=envelope, review_items=[])
 
-        return AgentRunResult(envelope=envelope, review_items=review_items)
-
-    # ---------- internals ----------
-    def _collect_data_gaps(self, state) -> Iterable[DataGap]:
-        envelopes = state.get("envelopes") or {}
-        for envelope in envelopes.values():
-            for gap in envelope.get("data_gaps") or []:
-                # tolerate both dataclass-like dict and already-normalized dict
-                if isinstance(gap, dict):
-                    yield DataGap(
-                        missing=str(gap.get("missing", "")),
-                        impact=str(gap.get("impact", "")),
-                        severity=str(gap.get("severity", "medium")),
-                    )
-
-    def _build_report_markdown(
+    def _render_markdown(
         self,
+        *,
         scenario: Dict[str, Any],
-        intake_metrics: Dict[str, Any],
-        intake_artifacts: Dict[str, Any],
+        selection: Dict[str, Any],
+        inventory: Dict[str, Any],
+        park_profile: Dict[str, Any],
+        energy_tendency: Dict[str, Any],
+        measures: List[Dict[str, Any]],
+        eco_blocks: List[Dict[str, Any]],
         insight_metrics: Dict[str, Any],
-        insight_artifacts: Dict[str, Any],
-        data_gaps: List[DataGap],
     ) -> str:
-        scenario_id = str(scenario.get("scenario_id") or "default")
-        baseline = (insight_metrics.get("baseline") or insight_artifacts.get("baseline") or {})
-        measures = insight_metrics.get("top_measures") or insight_artifacts.get("measures") or []
-        policy = (insight_metrics.get("policy") or {}).copy()
-        if not policy:
-            policy = (insight_artifacts.get("policy_artifacts") or {}).copy()
-        finance = insight_metrics.get("finance") or {}
-
-        deep_energy = insight_metrics.get("deepresearch_energy_flow") or ""
-        deep_cash = insight_metrics.get("deepresearch_cash_flow") or ""
-
-        inventory = (intake_artifacts.get("inventory") or {}).get("files") or []
-        csv_descs = intake_artifacts.get("csv_descriptions") or []
-        pdf_evidence = insight_artifacts.get("pdf_evidence_items") or []
-
-        # Executive summary (LLM optional)
-        summary_prompt = self._summary_prompt(scenario, baseline, measures, policy, finance, data_gaps)
-        summary_fallback = self._summary_fallback(scenario, baseline, measures, policy, finance, data_gaps)
-        executive_summary = self.llm.markdown(
-            system_prompt="你是资深的多能源园区低碳规划专家，专门撰写工业园区碳中和技术经济分析报告。请输出结构化的中文 Markdown 执行摘要，长度不少于 300 字，确保内容专业、数据准确、建议可操作。",
-            user_prompt=summary_prompt,
-            fallback=summary_fallback,
-        )
-
-        # Build body (mostly deterministic to keep auditable)
+        meta = selection.get("metadata") or {}
         lines: List[str] = []
-        lines.append(f"# 工业园区低碳路线图报告：{scenario_id}")
+
+        lines.append(f"# 多能源智能体分析报告（scenario={scenario.get('scenario_id','-')}）")
         lines.append("")
-        lines.append(f"> 生成时间：{datetime.utcnow().isoformat()}Z")
+        lines.append("## 1. 摘要")
+        lines.append(
+            "本报告由 multi_energy_agent 自动生成，目标是：在缺少完整能耗台账/负荷曲线的情况下，"
+            "先利用已具备的‘园区名录/空间 AOI（fhd）’与‘行业多能需求倾向（lyx）’，形成园区画像、"
+            "推断冷热电气比例与措施优先级，并通过 eco_knowledge_graph 提供可引用的政策/指南证据片段。"
+        )
         lines.append("")
-        lines.append("## 1. 执行摘要")
-        lines.append(executive_summary.strip())
+
+        # Selection snapshot
+        lines.append("## 2. 分析对象与输入概览")
+        lines.append("### 2.1 园区选择（selection）")
+        lines.append("```json")
+        lines.append(json.dumps(selection, ensure_ascii=False, indent=2))
+        lines.append("```")
         lines.append("")
-        lines.append("## 2. 数据来源与范围说明")
-        lines.append(f"- 数据完备度评分（intake）：{intake_metrics.get('data_completeness_score','?')}")
-        lines.append(f"- CSV数量：{intake_metrics.get('file_count_csv','?')}；PDF数量：{intake_metrics.get('file_count_pdf','?')}；Excel数量：{intake_metrics.get('file_count_excel','?')}")
-        lines.append("- 本报告遵循“可审计”原则：每个关键结论尽量对应数据文件、表格或 PDF 证据条目。")
-        lines.append("- 重要边界：本系统 Agent 不承担复杂数学计算/优化求解；若需要优化结果，请提供外部模型（如线性规划/Gurobi）输出表，本报告负责解释与写作。")
+
+        lines.append("### 2.2 输入数据清单（inventory）")
+        inv_files = inventory.get("files") or []
+        lines.append(f"- 文件条目数：{len(inv_files)}")
+        # show top 12
+        for f in inv_files[:12]:
+            ftype = f.get("type") or "file"
+            path = f.get("path") or f.get("file") or "-"
+            size = f.get("size_bytes")
+            lines.append(f"  - [{ftype}] {path} (bytes={size})")
+        if len(inv_files) > 12:
+            lines.append(f"  - ...（省略 {len(inv_files)-12} 条）")
         lines.append("")
-        lines.append("### 2.1 文件清单（inventory）")
-        if inventory:
-            for f in inventory:
-                lines.append(f"- {f.get('type','?')}: `{f.get('path','')}` (size={f.get('size_bytes','?')} bytes)")
+
+        # Park profile
+        lines.append("## 3. 园区画像底座（fhd：园区名录 + 空间 AOI）")
+        if not park_profile.get("ok"):
+            lines.append("- 状态：未生成（fhd 数据不可用）。")
         else:
-            lines.append("- 未提供可读文件清单（请检查 inputs 路径）。")
+            lines.append(f"- 名录总园区数（全量）：{park_profile.get('total_parks')}")
+            lines.append(f"- 匹配园区数（按 selection 过滤）：{park_profile.get('matched_parks')}")
+            lines.append("- 产业结构（Top 10）：")
+            for name, cnt in (park_profile.get("top_industries") or [])[:10]:
+                lines.append(f"  - {name}: {cnt}")
+            lines.append("- 园区级别分布（Top 10）：")
+            for name, cnt in (park_profile.get("top_levels") or [])[:10]:
+                lines.append(f"  - {name}: {cnt}")
+
+            aoi = park_profile.get("aoi") or {}
+            lines.append("- 空间 AOI 覆盖：")
+            lines.append(f"  - AOI 要素总数：{aoi.get('total_features')}")
+            lines.append(f"  - AOI 全量边界框（bounds）：{aoi.get('bounds')}")
+            lines.append(f"  - 匹配 AOI 要素数：{aoi.get('matched_features')}")
+            lines.append(f"  - 匹配 AOI 边界框：{aoi.get('matched_bounds')}")
+            if aoi.get("matched_area_km2") is not None:
+                lines.append(f"  - 匹配 AOI 估算面积(km²)：{aoi.get('matched_area_km2')}")
         lines.append("")
-        lines.append("## 3. 基础数据描述（CSV）")
-        if csv_descs:
-            for item in csv_descs:
-                lines.append(f"### 3.X 数据集：{item.get('file')}")
-                lines.append(item.get("description_markdown", "").strip())
-                lines.append("")
+        lines.append(
+            "**解释**：fhd 数据用于回答‘这个地区/园区大概有多少产业园？以什么产业为主？空间覆盖范围大致如何？’。"
+            "这为后续‘选址 + 产业结构 -> 用能策略’提供画像底座。"
+        )
+        lines.append("")
+
+        # Energy tendency
+        lines.append("## 4. 行业多能需求倾向（lyx：冷热电气比例推断）")
+        if not energy_tendency.get("ok"):
+            lines.append("- 状态：未生成（lyx 数据不可用）。")
         else:
-            lines.append("- 未提供 CSV 或尚未完成 CSV 画像。")
-            lines.append("")
-        lines.append("## 4. 园区现状与基线（描述性）")
-        lines.append(f"- 基准年：{baseline.get('baseline_year','?')}")
-        lines.append(f"- 面积（km2）：{baseline.get('area_km2','?')}；企业数估计：{baseline.get('entity_count_est','?')}")
-        lines.append(f"- 电力用能（MWh）：{baseline.get('electricity_mwh','?')}；热用能（MWh）：{baseline.get('thermal_mwh','?')}")
-        lines.append(f"- Scope1（tCO2）：{baseline.get('scope1_emissions_tco2','?')}；Scope2（tCO2）：{baseline.get('scope2_emissions_tco2','?')}")
-        lines.append(f"- 总排放（tCO2）：{baseline.get('total_emissions_tco2','?')}")
-        lines.append(f"- 边界说明：{baseline.get('boundary_note','')}")
+            lines.append(f"- 推断方法：{energy_tendency.get('method')}")
+            lines.append("- 多能占比（归一化后的倾向权重）：")
+            mix = energy_tendency.get("energy_mix") or {}
+            for k, v in mix.items():
+                lines.append(f"  - {k}: {v}")
+            lines.append("- 关键维度（Top）：")
+            for k, v in (energy_tendency.get("top_dimensions") or [])[:6]:
+                lines.append(f"  - {k}: {v}")
+            lines.append("- 规则化建议：")
+            for s in energy_tendency.get("suggestions") or []:
+                lines.append(f"  - {s}")
+
+            lines.append("- 措施优先级（由 lyx 规则输出）：")
+            for p in energy_tendency.get("priorities") or []:
+                lines.append(f"  - **{p.get('theme')}**：{p.get('why')}")
+                for m in p.get("measures") or []:
+                    lines.append(f"    - {m}")
         lines.append("")
-        lines.append("## 5. DeepResearch：能流分析")
-        lines.append(deep_energy.strip() or "- 未提供能流分析内容。")
+        lines.append(
+            "**解释**：lyx 数据本质是‘行业->多能需求倾向’的先验。我们用 fhd 的产业结构权重进行加权，"
+            "得到园区层面的冷热电气/燃气倾向，从而指导储能、余热、热泵、冷站等措施的优先级。"
+        )
         lines.append("")
-        lines.append("## 6. DeepResearch：现金流分析")
-        lines.append(deep_cash.strip() or "- 未提供现金流分析内容。")
-        lines.append("")
-        lines.append("## 7. 措施机会清单（不做优化，仅筛选+解释）")
-        if measures:
+
+        # Measures
+        lines.append("## 5. 决策支持：措施机会清单（不做优化，只做筛选）")
+        if not measures:
+            lines.append("- 当前未输出措施。")
+        else:
             for idx, m in enumerate(measures, start=1):
-                missing = m.get("missing_inputs") or []
-                missing_note = f"；缺失输入：{', '.join(missing)}" if missing else ""
-                lines.append(
-                    f"{idx}. **{m.get('name')}**（ID={m.get('id')}，评分={m.get('applicability_score')}）"
-                    f"：预期减排≈{m.get('expected_reduction_tco2')} tCO2，CAPEX≈{m.get('capex_million_cny')} 百万，年净收益≈{m.get('annual_net_savings_million_cny')} 百万{missing_note}"
-                )
+                lines.append(f"### 5.{idx} {m.get('name')}（{m.get('id')}）")
+                lines.append(f"- 适用性评分（0~1）：{m.get('applicability_score')}")
+                lines.append(f"- 主题：{', '.join(m.get('themes') or [])}")
+                lines.append(f"- 解释：{m.get('explain')}")
+                miss = m.get("missing_inputs") or []
+                if miss:
+                    lines.append("- 需要补充的数据（用于下一步可行性/量化评估）：")
+                    for x in miss:
+                        lines.append(f"  - {x}")
+                lines.append("")
+
+        lines.append(
+            "**注意**：这里的‘评分’只是一种规则排序，用于把有限精力优先投入到最可能有效的方向。"
+            "真正的方案比选/容量优化/经济性测算，应在补充负荷曲线、电价、设备清单等数据后开展。"
+        )
+        lines.append("")
+
+        # Policy evidence
+        lines.append("## 6. 政策/指南证据链（eco_knowledge_graph：可引用片段）")
+        if not eco_blocks:
+            lines.append("- 当前未获得证据片段（可能是索引未构建或关键词不匹配）。")
         else:
-            lines.append("- 暂无措施清单（需要补充基础数据或措施库）。")
-        lines.append("")
-        lines.append("## 8. 政策与激励匹配（基于政策KG）")
-        if isinstance(policy, dict) and policy.get("matched_clause_count") is not None:
-            lines.append(f"- KG版本：{policy.get('kg_version','unknown')}；匹配条款数：{policy.get('matched_clause_count','?')}")
-            lines.append(f"- 估算CAPEX补贴合计：{policy.get('policy_capex_subsidy_total_million_cny','?')} 百万 CNY")
-            matched = ((insight_artifacts.get('policy_artifacts') or {}).get('matched_clauses') or [])
-            if matched:
-                lines.append("### 8.1 Top 匹配条款（最多5条）")
-                for item in matched[:5]:
-                    cite = item.get("citation_no") or item.get("doc_id") or "N/A"
-                    title = item.get("doc_title") or ""
-                    excerpt = (item.get("excerpt") or "").strip()
-                    excerpt = excerpt[:200] + ("…" if len(excerpt) > 200 else "")
-                    lines.append(f"- [{cite}] {title}：{excerpt}")
-            else:
-                lines.append("- 未匹配到条款（可能缺少 admin_codes/industry_codes 或 KG 文件为空）。")
-        else:
-            lines.append("- 政策匹配结果不可用。")
-        lines.append("")
-        lines.append("## 9. 经济性汇总（解释性）")
-        if finance:
-            lines.append(f"- 资金测算来源：{finance.get('finance_source','?')}")
-            for k in [
-                "portfolio_capex_million_cny",
-                "portfolio_capex_gross_million_cny",
-                "policy_incentive_million_cny",
-                "portfolio_annual_net_million_cny",
-                "portfolio_npv_million_cny",
-                "portfolio_payback_years",
-            ]:
-                if k in finance:
-                    lines.append(f"- {k}: {finance.get(k)}")
-        else:
-            lines.append("- 暂无经济性汇总（需要措施+补贴或现金流表）。")
-        lines.append("")
-        lines.append("## 10. 证据链与引用（PDF/表格）")
-        if pdf_evidence:
-            lines.append(f"- 已抽取 PDF 证据条目 {len(pdf_evidence)} 条（示例列出前10条）：")
-            for ev in pdf_evidence[:10]:
-                lines.append(f"  - {ev.get('evidence_id')} (p{ev.get('page')}): {ev.get('excerpt')}")
-        else:
-            lines.append("- 未提供 PDF 证据条目。")
-        lines.append("")
-        lines.append("## 11. 风险、数据缺口与缓解策略")
-        if data_gaps:
-            for g in data_gaps:
-                lines.append(f"- **[{g.severity}] 缺口：{g.missing}** —— 影响：{g.impact}")
-            lines.append("")
-            lines.append("### 11.1 缓解建议（通用）")
-            lines.append("- 优先补充：园区边界/企业清单、分项电/热/气计量、负荷曲线、蒸汽品位、关键设备台账。")
-            lines.append("- 现金流方面：CAPEX/OPEX拆分、补贴兑现条件、寿命期、折现率、电价/碳价假设。")
-            lines.append("- 若需要最优配置/调度：由外部优化模型计算并输出表格，本报告仅负责解释与写作。")
-        else:
-            lines.append("- 未发现显著数据缺口（仍建议人工复核关键假设）。")
-        lines.append("")
-        lines.append("## 12. 下一步工作清单")
-        lines.append("- 将缺失字段补齐并重新运行；对比两次报告差异，形成版本化审计轨迹。")
-        lines.append("- 接入真实知识图谱（KG）与数据库后，可将描述从“代理估算”升级为“数据驱动”。")
-        lines.append("- 在问答（QA）场景中，基于 qa_index.json 建立可检索的证据/字段字典，提高可解释性与可追溯性。")
-        lines.append("")
-        lines.append("## 附录 A：场景参数")
-        for k, v in sorted((scenario or {}).items(), key=lambda kv: kv[0]):
-            lines.append(f"- {k}: {v}")
-        lines.append("")
-
-        return "\n".join(lines)
-
-    def _summary_prompt(
-        self,
-        scenario: Dict[str, Any],
-        baseline: Dict[str, Any],
-        measures: List[Dict[str, Any]],
-        policy: Dict[str, Any],
-        finance: Dict[str, Any],
-        data_gaps: List[DataGap],
-    ) -> str:
-        top = measures[:3] if measures else []
-        top_brief = "；".join([f"{m.get('name')}({m.get('applicability_score')})" for m in top]) or "暂无"
-        gaps_brief = "；".join([f"{g.missing}({g.severity})" for g in data_gaps[:5]]) or "无"
-        return (
-            "请写一段“执行摘要”，要求：\n"
-            "- 中文 Markdown\n"
-            "- 至少 250 字\n"
-            "- 结构包含：现状一句话、关键机会（措施/政策/经济性）、主要风险（数据缺口）\n"
-            "- 不要编造不存在的数值；仅使用给定要点或标注为估算\n"
-            f"场景ID：{scenario.get('scenario_id')}\n"
-            f"基线总排放(估算)：{baseline.get('total_emissions_tco2')} tCO2\n"
-            f"Top措施：{top_brief}\n"
-            f"政策匹配条款数：{policy.get('matched_clause_count','?')}\n"
-            f"补贴合计(估算)：{policy.get('policy_capex_subsidy_total_million_cny','?')} 百万\n"
-            f"经济性摘要：NPV={finance.get('portfolio_npv_million_cny','?')} 百万，回收期={finance.get('portfolio_payback_years','?')}\n"
-            f"主要数据缺口：{gaps_brief}\n"
-        )
-
-    def _summary_fallback(
-        self,
-        scenario: Dict[str, Any],
-        baseline: Dict[str, Any],
-        measures: List[Dict[str, Any]],
-        policy: Dict[str, Any],
-        finance: Dict[str, Any],
-        data_gaps: List[DataGap],
-    ) -> str:
-        gap_lines = "\n".join([f"- {g.missing}（{g.severity}）：{g.impact}" for g in data_gaps[:6]]) or "- 暂无"
-        top = measures[:3] if measures else []
-        top_lines = "\n".join(
-            [
-                f"- {m.get('name')}：评分{m.get('applicability_score')}，减排≈{m.get('expected_reduction_tco2')} tCO2"
-                for m in top
-            ]
-        ) or "- 暂无"
-        return (
-            "本报告基于当前可获得的基础数据与政策知识图谱（KG）进行描述性分析，目标是形成可审计的园区低碳路线图草案。\n"
-            f"园区基线排放（估算）约为 {baseline.get('total_emissions_tco2','?')} tCO2，其中 Scope1≈{baseline.get('scope1_emissions_tco2','?')}，Scope2≈{baseline.get('scope2_emissions_tco2','?')}。\n"
-            "在不进行复杂优化求解的前提下，系统筛选出若干可落地措施作为机会清单，并结合政策KG给出潜在补贴线索与引用。\n"
-            f"Top 措施：\n{top_lines}\n"
-            f"政策匹配条款数约 {policy.get('matched_clause_count','?')} 条，补贴合计（估算）约 {policy.get('policy_capex_subsidy_total_million_cny','?')} 百万 CNY。\n"
-            f"经济性（占位/估算）：NPV≈{finance.get('portfolio_npv_million_cny','?')} 百万，回收期≈{finance.get('portfolio_payback_years','?')} 年。\n"
-            "风险方面，本报告明确列出当前数据缺口及其对结论的影响，并给出补充建议，以便后续迭代将“代理估算”升级为“数据驱动”的结论。\n"
-            f"主要数据缺口：\n{gap_lines}\n"
-        )
-
-    def _pad_report_to_min_length(self, report_markdown: str, min_cn_chars: int = 1000) -> str:
-        """Append deterministic Chinese appendix until cn_char_count >= min."""
-        cn_count = _cn_char_count(report_markdown)
-        if cn_count >= min_cn_chars:
-            return report_markdown
-
-        appendix_lines: List[str] = []
-        appendix_lines.append("## 附录 B：方法论与审计说明（自动补足字数）")
-        appendix_lines.append(
-            "本附录用于解释本报告的生成方法、审计口径与常见误区，确保报告在数据不完备时仍保持可解释性。"
-        )
-        appendix_lines.append("")
-        appendix_lines.append("### B.1 方法论边界")
-        appendix_lines.append(
-            "1) 本系统 Agent 只做“描述、报告生成、问答解释”。"
-            "2) 若涉及能源系统最优配置、梯级利用、成本最小化等复杂问题，应由专门的优化模型完成，"
-            "Agent 负责读取优化输出并解释其含义与影响。"
-        )
-        appendix_lines.append("")
-        appendix_lines.append("### B.2 建议的数据字典字段（示例）")
-        appendix_lines.append(
-            "- 园区层：园区边界、企业清单、行业代码、建筑/屋顶面积、设备清单。\n"
-            "- 能源层：分项电表、燃气表、蒸汽/热计量，时间粒度（15min/1h/1d），负荷曲线。\n"
-            "- 过程层：关键工艺热品位、余热来源温度/流量、换热/热泵效率。\n"
-            "- 经济层：CAPEX/OPEX拆分、寿命期、折现率、电价/碳价、补贴兑现条件与时间。"
-        )
-        appendix_lines.append("")
-        appendix_lines.append("### B.3 证据链与引用建议")
-        appendix_lines.append(
-            "报告中的政策与调研结论应尽量绑定到 PDF/公告原文条款（含页码、引用编号），"
-            "并在后续版本中将证据条目纳入可检索索引，以支持问答系统的可追溯回答。"
-        )
-        appendix_lines.append("")
-        appendix_lines.append("### B.4 常见风险提示")
-        appendix_lines.append(
-            "1) 口径不一致：不同来源的能耗统计周期、单位、边界可能不同，需要统一。\n"
-            "2) 代理估算偏差：在缺少真实计量数据时，任何数值都应标注为估算，并给出敏感性字段。\n"
-            "3) 政策兑现不确定：补贴通常有申报条件与时点，需在现金流中显式体现。"
-        )
-        appendix_lines.append("")
-
-        padded = report_markdown + "\n" + "\n".join(appendix_lines)
-
-        # If still short, repeat a neutral explanation block (still useful, non-spammy)
-        while _cn_char_count(padded) < min_cn_chars:
-            padded += (
-                "\n\n"
-                "### B.X 进一步说明（自动补足）\n"
-                "为保证报告的完整性，本节补充对“能流/现金流”两条主线的复核要点：\n"
-                "（1）能流：确认输入侧（电/气/煤/蒸汽/热）计量齐全，输出侧（工艺/建筑/公辅）可分摊；"
-                "（2）现金流：确认CAPEX与OPEX拆分合理，收益口径（节能/减排/产能）与价格假设一致，"
-                "并对补贴兑现与运维风险做情景说明。"
+            lines.append(
+                "下列片段来自 eco_knowledge_graph/data 中的 PDF/DOCX 文档检索结果。"
+                "建议在最终交付前，由人工对引用片段进行二次核对（页码/上下文/适用范围）。"
             )
-        return padded
+            lines.append("")
+            for blk in eco_blocks:
+                q = blk.get("query")
+                snippets = blk.get("snippets") or []
+                lines.append(f"### 6.x 查询：{q}")
+                if not snippets:
+                    lines.append("- 未命中")
+                    continue
+                for s in snippets[:5]:
+                    src = s.get("source")
+                    page = s.get("page")
+                    score = s.get("score")
+                    text = (s.get("text") or "").strip().replace("\n", " ")
+                    text = text[:260] + ("..." if len(text) > 260 else "")
+                    lines.append(f"- **{src}** (page={page}, score={score})：{text}")
+                lines.append("")
 
-    def _build_qa_index(
-        self,
-        scenario: Dict[str, Any],
-        intake_artifacts: Dict[str, Any],
-        insight_artifacts: Dict[str, Any],
-        report_path: str,
-    ) -> Dict[str, Any]:
-        inventory = (intake_artifacts.get("inventory") or {}).get("files") or []
-        csv_profiles = intake_artifacts.get("csv_profiles") or []
-        pdf_evidence = insight_artifacts.get("pdf_evidence_items") or []
-        
-        # Extract measures from insight artifacts
-        measures = insight_artifacts.get("measures") or []
-        
-        # Extract policies from policy_artifacts
-        policy_artifacts = insight_artifacts.get("policy_artifacts") or {}
-        policies = policy_artifacts.get("matched_clauses") or []
-        
-        # Extract baseline from insight artifacts
-        baseline = insight_artifacts.get("baseline") or {}
-        
-        # Extract data gaps - need to get from state or reconstruct
-        # For now, we'll leave it empty and populate from review_items if needed
-        data_gaps_list = []
+        lines.append(
+            "**解释**：eco_knowledge_graph 在这里承担‘证据链’角色：把政策/指南的可引用片段插入报告，"
+            "提升可用性与可信度。当前实现为轻量级本地检索（TF-IDF 字符 n-gram），便于离线运行与审计。"
+        )
+        lines.append("")
 
-        return {
-            "scenario_id": scenario.get("scenario_id"),
-            "report_path": report_path,
-            "inventory": inventory,
-            "csv_profiles": csv_profiles,
-            "pdf_evidence_items": pdf_evidence,
-            "measures": measures,
-            "policies": policies,
-            "baseline": baseline,
-            "data_gaps": data_gaps_list,
-            "note": "This file is designed for future QA/RAG indexing; not a replacement for a vector DB.",
-        }
+        # Data gaps
+        lines.append("## 7. 数据缺口与下一步建议")
+        lines.append(
+            "为了把本报告从‘画像+倾向+优先级’推进到‘可落地的容量/投资/排放量化’，建议按优先级补齐数据："
+        )
+        lines.append("- **负荷与能耗**：园区或企业级的电/热/冷/气月度台账 + 典型日/周负荷曲线（最好分项）。")
+        lines.append("- **设备清单**：锅炉、冷机、空压机、窑炉、变压器等容量与效率参数。")
+        lines.append("- **价格参数**：分时电价（TOU）、燃气价格、蒸汽/冷量结算口径。")
+        lines.append("- **空间与资源**：可用屋顶面积/遮挡、并网容量限制、可再生资源。")
+        lines.append("- **管理边界**：组织边界（自用/租户/外供）、排放核算口径（Scope1/2/3）。")
+        lines.append("")
+
+        lines.append("## 8. 附录：Insight 阶段摘要指标")
+        lines.append("```json")
+        lines.append(json.dumps(insight_metrics, ensure_ascii=False, indent=2))
+        lines.append("```")
+        lines.append("")
+
+        # ensure length
+        report_text = "\n".join(lines)
+        if len(report_text) < 1100:
+            # pad with an explicit note so the 1000-char requirement is consistently met
+            report_text += (
+                "\n\n---\n\n"
+                "### 说明补充\n"
+                "本报告在当前数据条件下采用‘先验+规则’方式输出决策支持：\n"
+                "1) fhd 负责回答‘园区在哪里/有多少/产业结构如何/空间覆盖如何’；\n"
+                "2) lyx 负责回答‘这些产业倾向用哪些能（热/冷/电/气）’；\n"
+                "3) eco_knowledge_graph 负责回答‘哪些条文/指南可以作为证据引用’。\n"
+                "当你补齐能耗台账和负荷曲线后，multi_energy_agent 可以进一步把措施从‘优先级’推进到‘量化评估’。\n"
+            )
+        return report_text

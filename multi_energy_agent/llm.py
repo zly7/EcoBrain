@@ -13,7 +13,9 @@ from __future__ import annotations
 
 import os
 from dataclasses import dataclass
-from typing import Optional
+from typing import Optional, Any, Dict
+
+from .utils.logging import RunContext
 
 
 @dataclass
@@ -21,13 +23,32 @@ class StructuredLLMClient:
     model: str = os.getenv("OPENAI_MODEL", "gpt-4o-mini")
     temperature: float = float(os.getenv("OPENAI_TEMPERATURE", "0.2"))
     max_tokens: int = int(os.getenv("OPENAI_MAX_TOKENS", "1800"))
+    run_context: Optional[RunContext] = None
 
     def markdown(self, system_prompt: str, user_prompt: str, fallback: str = "") -> str:
         """Return markdown text. If no LLM is available, return fallback."""
 
+        def _log(record: Dict[str, Any]) -> None:
+            if self.run_context:
+                self.run_context.log_llm(record)
+
         api_key = os.getenv("OPENAI_API_KEY")
         if not api_key:
-            return fallback or user_prompt
+            content = fallback or user_prompt
+            _log(
+                {
+                    "event": "llm_markdown",
+                    "llm_used": False,
+                    "model": self.model,
+                    "temperature": self.temperature,
+                    "max_tokens": self.max_tokens,
+                    "system_prompt": system_prompt,
+                    "user_prompt": user_prompt,
+                    "fallback_used": True,
+                    "response": content,
+                }
+            )
+            return content
 
         # Try the modern OpenAI python client first.
         try:
@@ -44,7 +65,21 @@ class StructuredLLMClient:
                 ],
             )
             content = (resp.choices[0].message.content or "").strip()
-            return content or (fallback or user_prompt)
+            final = content or (fallback or user_prompt)
+            _log(
+                {
+                    "event": "llm_markdown",
+                    "llm_used": True,
+                    "model": self.model,
+                    "temperature": self.temperature,
+                    "max_tokens": self.max_tokens,
+                    "system_prompt": system_prompt,
+                    "user_prompt": user_prompt,
+                    "fallback_used": not bool(content),
+                    "response": final,
+                }
+            )
+            return final
         except Exception:
             # Fallback path: try legacy openai package (if present), otherwise return fallback.
             try:
@@ -61,6 +96,35 @@ class StructuredLLMClient:
                     ],
                 )
                 content = (resp["choices"][0]["message"]["content"] or "").strip()
-                return content or (fallback or user_prompt)
+                final = content or (fallback or user_prompt)
+                _log(
+                    {
+                        "event": "llm_markdown",
+                        "llm_used": True,
+                        "model": self.model,
+                        "temperature": self.temperature,
+                        "max_tokens": self.max_tokens,
+                        "system_prompt": system_prompt,
+                        "user_prompt": user_prompt,
+                        "fallback_used": not bool(content),
+                        "response": final,
+                    }
+                )
+                return final
             except Exception:
-                return fallback or user_prompt
+                content = fallback or user_prompt
+                _log(
+                    {
+                        "event": "llm_markdown",
+                        "llm_used": False,
+                        "model": self.model,
+                        "temperature": self.temperature,
+                        "max_tokens": self.max_tokens,
+                        "system_prompt": system_prompt,
+                        "user_prompt": user_prompt,
+                        "fallback_used": True,
+                        "response": content,
+                        "error": "llm_call_failed",
+                    }
+                )
+                return content

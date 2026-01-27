@@ -1,24 +1,28 @@
 """Core schemas shared across agents.
 
-NOTE: This project uses a "blackboard" dict (`BlackboardState`) to pass structured
-data between stages. Each stage emits a `ResultEnvelope`, and the runner stores
-`envelope.as_dict()` under `state["envelopes"][stage.value]`.
+Backend modeling policy:
+- Use **Pydantic** models (per project requirement) for stable schema + validation.
+- `BlackboardState` remains a simple dict for orchestration convenience.
+
+Each stage emits a `ResultEnvelope` and the runner stores `envelope.as_dict()`
+under `state["envelopes"][stage.value]`.
 """
 
 from __future__ import annotations
 
 import uuid
-from dataclasses import dataclass, field, asdict
 from enum import Enum
-from typing import Any, Dict, List, Optional, TypedDict
+from typing import Any, Dict, List, Optional
+
+from pydantic import BaseModel, ConfigDict, Field
 
 
 class Stage(str, Enum):
     """Pipeline stages (agent count <= 4, recommended 3)."""
 
-    INTAKE = "intake"   # Data intake & profiling (CSV/PDF/Excel)
-    INSIGHT = "insight" # KG-driven description & deepresearch synthesis (no optimization)
-    REPORT = "report"   # Final markdown report (>=1000 Chinese chars) + local save
+    INTAKE = "intake"   # Data intake & profiling (CSV/PDF/Excel) + back-data materialize
+    INSIGHT = "insight" # Descriptive synthesis (no optimization)
+    REPORT = "report"   # Final report (Markdown + PDF)
 
 
 BlackboardState = Dict[str, Any]
@@ -28,8 +32,9 @@ def new_result_id(stage: Stage) -> str:
     return f"{stage.value}-{uuid.uuid4().hex[:12]}"
 
 
-@dataclass
-class Evidence:
+class Evidence(BaseModel):
+    model_config = ConfigDict(extra="allow")
+
     evidence_id: str
     description: str
     source: str
@@ -38,34 +43,37 @@ class Evidence:
     excerpt: Optional[str] = None
 
     def as_dict(self) -> Dict[str, Any]:
-        return asdict(self)
+        return self.model_dump()
 
 
-@dataclass
-class Assumption:
+class Assumption(BaseModel):
+    model_config = ConfigDict(extra="allow")
+
     name: str
     value: Any
     unit: Optional[str] = None
     reason: str = ""
     source: Optional[str] = None
-    sensitivity: str = "medium"
+    sensitivity: str = "medium"  # low/medium/high
 
     def as_dict(self) -> Dict[str, Any]:
-        return asdict(self)
+        return self.model_dump()
 
 
-@dataclass
-class DataGap:
+class DataGap(BaseModel):
+    model_config = ConfigDict(extra="allow")
+
     missing: str
     impact: str
     severity: str = "medium"  # low/medium/high
 
     def as_dict(self) -> Dict[str, Any]:
-        return asdict(self)
+        return self.model_dump()
 
 
-@dataclass
-class HumanReviewItem:
+class HumanReviewItem(BaseModel):
+    model_config = ConfigDict(use_enum_values=True, extra="allow")
+
     checkpoint_id: str
     stage: Stage
     issue: str
@@ -74,36 +82,24 @@ class HumanReviewItem:
     severity: str = "medium"
 
     def as_dict(self) -> Dict[str, Any]:
-        payload = asdict(self)
-        payload["stage"] = self.stage.value
-        return payload
+        return self.model_dump()
 
 
-@dataclass
-class ResultEnvelope:
+class ResultEnvelope(BaseModel):
+    model_config = ConfigDict(use_enum_values=True, extra="allow")
+
     result_id: str
     scenario_id: str
     region_id: str
     stage: Stage
     metrics: Dict[str, Any]
-    artifacts: Dict[str, Any] = field(default_factory=dict)
-    assumptions: List[Assumption] = field(default_factory=list)
-    evidence: List[Evidence] = field(default_factory=list)
+    artifacts: Dict[str, Any] = Field(default_factory=dict)
+    assumptions: List[Assumption] = Field(default_factory=list)
+    evidence: List[Evidence] = Field(default_factory=list)
     confidence: float = 0.5
-    data_gaps: List[DataGap] = field(default_factory=list)
-    reproducibility: Dict[str, Any] = field(default_factory=dict)
+    data_gaps: List[DataGap] = Field(default_factory=list)
+    reproducibility: Dict[str, Any] = Field(default_factory=dict)
 
     def as_dict(self) -> Dict[str, Any]:
-        return {
-            "result_id": self.result_id,
-            "scenario_id": self.scenario_id,
-            "region_id": self.region_id,
-            "stage": self.stage.value,
-            "metrics": self.metrics,
-            "artifacts": self.artifacts,
-            "assumptions": [a.as_dict() for a in self.assumptions],
-            "evidence": [e.as_dict() for e in self.evidence],
-            "confidence": self.confidence,
-            "data_gaps": [g.as_dict() for g in self.data_gaps],
-            "reproducibility": self.reproducibility,
-        }
+        # keep field names stable for the frontend
+        return self.model_dump()
