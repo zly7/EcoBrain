@@ -5,7 +5,6 @@ from typing import Any, Dict, Optional
 from pydantic import BaseModel, Field, ConfigDict
 
 from .base import BaseTool
-from ..reporting.pdf import markdown_to_pdf
 
 
 class RenderPDFReportInput(BaseModel):
@@ -33,9 +32,20 @@ class RenderPDFReportTool(BaseTool):
             }
 
         md_text = md_path.read_text(encoding="utf-8", errors="ignore")
-        pdf_path = markdown_to_pdf(md_text, payload.pdf_path, title=payload.title)
+        
+        # Try WeasyPrint first, fall back to ReportLab
+        try:
+            from ..reporting.pdf_weasyprint import markdown_to_pdf_weasyprint
+            pdf_path = markdown_to_pdf_weasyprint(md_text, payload.pdf_path, title=payload.title)
+            pdf_engine = "weasyprint"
+        except ImportError:
+            from ..reporting.pdf import markdown_to_pdf
+            pdf_path = markdown_to_pdf(md_text, payload.pdf_path, title=payload.title)
+            pdf_engine = "reportlab"
+        
         return {
             "ok": True,
             "pdf_path": pdf_path,
             "markdown_path": str(md_path),
+            "pdf_engine": pdf_engine,
         }

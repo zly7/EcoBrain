@@ -75,18 +75,23 @@ def run_scenario(
 
 
 if __name__ == "__main__":
+    # 修改这里的参数来查询不同的园区
     demo_state = run_scenario(
         selection={
             "metadata": {
-                # For best demo effect, set city to 柳州 so that the included local policy PDF is relevant.
-                "city": "柳州市",
-                "area_km2": 12.5,
-                "entity_count": 180,
-                "industry_keywords": ["汽车", "有色金属", "机械"],
+                # 修改以下参数来查询不同园区：
+                "province": "",           # 省份，如："天津"、"广东"
+                "city": "柳州市",          # 城市，如："柳州市"、"上海"、"深圳"
+                "district": "",           # 区县，如："武清"、"浦东"
+                "park_name": "",          # 园区名称关键词，如："武清开发区"、"高新区"
+                "industry_keywords": ["汽车", "有色金属", "机械"],  # 产业关键词列表
+                # 可选参数：
+                # "area_km2": 12.5,       # 园区面积（平方公里）
+                # "entity_count": 180,    # 企业数量
             }
         },
         scenario={
-            "scenario_id": "demo-liuzhou",
+            "scenario_id": "demo-liuzhou",  # 修改场景 ID，如："shanghai-park"、"shenzhen-hitech"
             "baseline_year": 2023,
         },
         inputs={},

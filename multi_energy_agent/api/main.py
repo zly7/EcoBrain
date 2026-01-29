@@ -11,6 +11,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from ..schemas import Stage
 from ..llm import StructuredLLMClient
+from ..chat_agent import ChatAgent
 from .models import (
     ScenarioCreateResponse,
     ScenarioDetailResponse,
@@ -54,6 +55,9 @@ executor = ScenarioExecutor(store, publisher)
 # 初始化LLM客户端用于Q&A
 llm_client = StructuredLLMClient()
 qa_service = ReportQAService(llm_client=llm_client)
+
+# 初始化对话 Agent
+chat_agent = ChatAgent(llm=llm_client)
 
 
 @app.on_event("startup")
@@ -164,3 +168,24 @@ async def get_question_suggestions(scenario_id: str) -> dict:
     """Get suggested questions for a scenario."""
     suggestions = qa_service.get_suggested_questions(scenario_id)
     return {"scenario_id": scenario_id, "suggestions": suggestions}
+
+
+@app.post("/api/v1/chat", tags=["chat"])
+async def chat(message: str = Query(..., description="User message")) -> dict:
+    """对话式查询 - 通过自然语言查询园区信息并生成报告"""
+    try:
+        response = chat_agent.chat(message)
+        return {
+            "message": message,
+            "response": response,
+            "conversation_history": chat_agent.get_history()
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.post("/api/v1/chat/reset", tags=["chat"])
+async def reset_chat() -> dict:
+    """重置对话状态"""
+    chat_agent.reset()
+    return {"status": "ok", "message": "对话已重置"}
