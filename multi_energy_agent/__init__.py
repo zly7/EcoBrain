@@ -10,9 +10,11 @@ Design principles:
 
 from .schemas import Stage, ResultEnvelope
 from .runner import run_scenario
+from .chat_agent import ChatAgent
 
 __all__ = [
     "Stage",
     "ResultEnvelope",
     "run_scenario",
+    "ChatAgent",
 ]

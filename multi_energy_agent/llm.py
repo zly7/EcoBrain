@@ -32,7 +32,10 @@ class StructuredLLMClient:
             if self.run_context:
                 self.run_context.log_llm(record)
 
-        api_key = os.getenv("OPENAI_API_KEY")
+        # Support both OPENAI_API_KEY and DEEPSEEK_API_KEY
+        api_key = os.getenv("OPENAI_API_KEY") or os.getenv("DEEPSEEK_API_KEY")
+        base_url = os.getenv("OPENAI_BASE_URL")
+        
         if not api_key:
             content = fallback or user_prompt
             _log(
@@ -54,7 +57,12 @@ class StructuredLLMClient:
         try:
             from openai import OpenAI  # type: ignore
 
-            client = OpenAI(api_key=api_key)
+            # Initialize client with optional base_url for DeepSeek or other providers
+            client_kwargs = {"api_key": api_key}
+            if base_url:
+                client_kwargs["base_url"] = base_url
+            
+            client = OpenAI(**client_kwargs)
             resp = client.chat.completions.create(
                 model=self.model,
                 temperature=self.temperature,
@@ -80,12 +88,14 @@ class StructuredLLMClient:
                 }
             )
             return final
-        except Exception:
+        except Exception as e:
             # Fallback path: try legacy openai package (if present), otherwise return fallback.
             try:
                 import openai  # type: ignore
 
                 openai.api_key = api_key
+                if base_url:
+                    openai.api_base = base_url
                 resp = openai.ChatCompletion.create(  # type: ignore
                     model=self.model,
                     temperature=self.temperature,
@@ -111,7 +121,7 @@ class StructuredLLMClient:
                     }
                 )
                 return final
-            except Exception:
+            except Exception as e2:
                 content = fallback or user_prompt
                 _log(
                     {
@@ -124,7 +134,7 @@ class StructuredLLMClient:
                         "user_prompt": user_prompt,
                         "fallback_used": True,
                         "response": content,
-                        "error": "llm_call_failed",
+                        "error": f"llm_call_failed: {str(e)}, {str(e2)}",
                     }
                 )
                 return content

@@ -96,9 +96,41 @@ def markdown_to_pdf(markdown_text: str, output_path: str, *, title: Optional[str
         leading=12,
     )
 
-    # Escape for ReportLab Paragraph (XML-ish)
+    # Escape for ReportLab Paragraph (XML-ish) and handle special chars
     def esc(s: str) -> str:
+        # First escape XML special chars
         s = s.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
+        
+        # Replace problematic special symbols with safe alternatives
+        # These symbols often fail in CID fonts
+        replacements = {
+            "°": "度",      # degree symbol
+            "²": "2",       # superscript 2
+            "³": "3",       # superscript 3
+            "±": "+/-",     # plus-minus
+            "×": "x",       # multiplication
+            "÷": "/",       # division
+            "≈": "约",      # approximately
+            "≤": "<=",      # less than or equal
+            "≥": ">=",      # greater than or equal
+            "≠": "!=",      # not equal
+            "→": "->",      # arrow
+            "←": "<-",      # arrow
+            "↑": "^",       # arrow
+            "↓": "v",       # arrow
+            "•": "·",       # bullet (use middle dot)
+            "…": "...",     # ellipsis
+            "—": "-",       # em dash
+            "–": "-",       # en dash
+            "'": "'",       # smart quote
+            "'": "'",       # smart quote
+            """: '"',       # smart quote
+            """: '"',       # smart quote
+        }
+        
+        for old, new in replacements.items():
+            s = s.replace(old, new)
+        
         return s
 
     story: List = []
