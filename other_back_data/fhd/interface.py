@@ -61,6 +61,18 @@ def _discover_files(data_dir: Path) -> Tuple[Optional[Path], Optional[Path]]:
     return excel, shp
 
 
+def _normalize_location(s: str) -> str:
+    """标准化地名，去除常见后缀和空格。"""
+    s = str(s or "").strip()
+    # 去除全角空格
+    s = s.replace("\u3000", "")
+    # 去除常见后缀
+    for suffix in ["省", "市", "自治区", "特别行政区", "壮族自治区", "回族自治区", "维吾尔自治区"]:
+        if s.endswith(suffix):
+            s = s[:-len(suffix)]
+    return s.strip()
+
+
 def _row_matches(row: Dict[str, Any], filters: Dict[str, Any]) -> bool:
     def contains(field: str, needle: str) -> bool:
         val = str(row.get(field) or "")
@@ -78,19 +90,59 @@ def _row_matches(row: Dict[str, Any], filters: Dict[str, Any]) -> bool:
             return True
         if not val:
             return False
-        return (n in val) or (val in n)
+        # 标准化后比较
+        val_norm = _normalize_location(val)
+        n_norm = _normalize_location(n)
+        return (n_norm in val) or (val_norm in n) or (n_norm in val_norm) or (val_norm in n_norm)
+
+    def fuzzy_contains_any(fields: List[str], needle: str) -> bool:
+        """Check if needle matches any of the given fields.
+
+        Useful for municipalities where province and city may be the same.
+        """
+        n = str(needle or "").strip()
+        if not n:
+            return True
+        n_norm = _normalize_location(n)
+        for field in fields:
+            val = str(row.get(field) or "").strip()
+            if val:
+                val_norm = _normalize_location(val)
+                if (n_norm in val) or (val_norm in n) or (n_norm in val_norm) or (val_norm in n_norm):
+                    return True
+        return False
 
     province = (filters.get("province") or "").strip()
-    if province and not fuzzy_contains("省份", province):
-        return False
-
     city = (filters.get("city") or "").strip()
-    if city and not fuzzy_contains("城市", city):
-        return False
+
+    # 直辖市列表
+    municipalities = ["上海", "北京", "天津", "重庆"]
+
+    # 检查是否是直辖市查询（province 和 city 相同，或者只有其中一个是直辖市）
+    is_municipality_query = (
+        (province and any(m in province for m in municipalities)) or
+        (city and any(m in city for m in municipalities))
+    )
+
+    if is_municipality_query:
+        # 对于直辖市，同时检查"省份"和"城市"字段，只要有一个匹配即可
+        location_needle = province or city
+        if not fuzzy_contains_any(["省份", "城市", "省", "市"], location_needle):
+            return False
+    else:
+        # 非直辖市，分别检查省份和城市
+        # 同时检查可能的字段名变体
+        if province:
+            if not (fuzzy_contains("省份", province) or fuzzy_contains("省", province)):
+                return False
+        if city:
+            if not (fuzzy_contains("城市", city) or fuzzy_contains("市", city)):
+                return False
 
     district = (filters.get("district") or "").strip()
-    if district and not fuzzy_contains("区县", district):
-        return False
+    if district:
+        if not (fuzzy_contains("区县", district) or fuzzy_contains("区", district) or fuzzy_contains("县", district)):
+            return False
 
     park_name_contains = (filters.get("park_name_contains") or "").strip()
     if park_name_contains and not contains("产业园名称", park_name_contains):

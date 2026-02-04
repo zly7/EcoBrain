@@ -69,9 +69,11 @@ Thumbs.db
 # Logs
 logs*/
 *.log
+*.jsonl
 
 # Outputs
 outputs/
+*.pdf
 
 # Temporary files
 *.tmp

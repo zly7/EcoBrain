@@ -22,8 +22,14 @@ from .utils.logging import RunContext
 class StructuredLLMClient:
     model: str = os.getenv("OPENAI_MODEL", "gpt-4o-mini")
     temperature: float = float(os.getenv("OPENAI_TEMPERATURE", "0.2"))
-    max_tokens: int = int(os.getenv("OPENAI_MAX_TOKENS", "1800"))
+    max_tokens: Optional[int] = None  # None means no limit (API default)
     run_context: Optional[RunContext] = None
+
+    def __post_init__(self):
+        # Allow override via environment variable
+        env_max_tokens = os.getenv("OPENAI_MAX_TOKENS")
+        if env_max_tokens:
+            self.max_tokens = int(env_max_tokens)
 
     def markdown(self, system_prompt: str, user_prompt: str, fallback: str = "") -> str:
         """Return markdown text. If no LLM is available, return fallback."""
@@ -63,17 +69,22 @@ class StructuredLLMClient:
             if base_url:
                 client_kwargs["base_url"] = base_url
 
-            print(f"[LLM] Calling {self.model} (max_tokens={self.max_tokens})...")
+            print(f"[LLM] Calling {self.model} (max_tokens={self.max_tokens or 'unlimited'})...")
             client = OpenAI(**client_kwargs)
-            resp = client.chat.completions.create(
-                model=self.model,
-                temperature=self.temperature,
-                max_tokens=self.max_tokens,
-                messages=[
+
+            # Build request kwargs
+            request_kwargs = {
+                "model": self.model,
+                "temperature": self.temperature,
+                "messages": [
                     {"role": "system", "content": system_prompt},
                     {"role": "user", "content": user_prompt},
                 ],
-            )
+            }
+            if self.max_tokens is not None:
+                request_kwargs["max_tokens"] = self.max_tokens
+
+            resp = client.chat.completions.create(**request_kwargs)
             content = (resp.choices[0].message.content or "").strip()
             print(f"[LLM] Response received, length: {len(content)} chars")
             final = content or (fallback or user_prompt)
@@ -100,15 +111,20 @@ class StructuredLLMClient:
                 openai.api_key = api_key
                 if base_url:
                     openai.api_base = base_url
-                resp = openai.ChatCompletion.create(  # type: ignore
-                    model=self.model,
-                    temperature=self.temperature,
-                    max_tokens=self.max_tokens,
-                    messages=[
+
+                # Build request kwargs for legacy API
+                legacy_kwargs = {
+                    "model": self.model,
+                    "temperature": self.temperature,
+                    "messages": [
                         {"role": "system", "content": system_prompt},
                         {"role": "user", "content": user_prompt},
                     ],
-                )
+                }
+                if self.max_tokens is not None:
+                    legacy_kwargs["max_tokens"] = self.max_tokens
+
+                resp = openai.ChatCompletion.create(**legacy_kwargs)  # type: ignore
                 content = (resp["choices"][0]["message"]["content"] or "").strip()
                 final = content or (fallback or user_prompt)
                 _log(

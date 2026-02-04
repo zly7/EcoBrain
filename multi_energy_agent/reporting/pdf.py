@@ -214,6 +214,22 @@ def _escape_text(s: str) -> str:
     return s
 
 
+def _format_markdown_inline(text: str) -> str:
+    """转换 Markdown 行内格式（粗体、斜体）为 ReportLab XML 标签。
+
+    注意：必须先调用 _escape_text 转义文本，再调用此函数。
+    """
+    # Bold text handling
+    text = re.sub(r'\*\*(.+?)\*\*', r'<b>\1</b>', text)
+    text = re.sub(r'__(.+?)__', r'<b>\1</b>', text)
+
+    # Italic text handling
+    text = re.sub(r'\*(.+?)\*', r'<i>\1</i>', text)
+    text = re.sub(r'_(.+?)_', r'<i>\1</i>', text)
+
+    return text
+
+
 def _add_colored_bullet(text: str, color: colors.Color = BRAND_COLORS["accent"]) -> str:
     """Add a colored bullet point to text."""
     return f'<font color="{color.hexval()}">●</font> {text}'
@@ -331,7 +347,7 @@ def markdown_to_pdf(markdown_text: str, output_path: str, *, title: Optional[str
         # H1 - Chapter heading with colored background
         if line.startswith("# "):
             chapter_count += 1
-            heading_text = line[2:].strip()
+            heading_text = _format_markdown_inline(_escape_text(line[2:].strip()))
 
             # Add chapter separator
             if chapter_count > 1:
@@ -339,7 +355,7 @@ def markdown_to_pdf(markdown_text: str, output_path: str, *, title: Optional[str
 
             # Create a table for colored heading background
             heading_table = Table(
-                [[Paragraph(_escape_text(heading_text), styles["h1"])]],
+                [[Paragraph(heading_text, styles["h1"])]],
                 colWidths=[doc.width],
             )
             heading_table.setStyle(TableStyle([
@@ -357,7 +373,8 @@ def markdown_to_pdf(markdown_text: str, output_path: str, *, title: Optional[str
         # H2
         if line.startswith("## "):
             story.append(Spacer(1, 8))
-            story.append(Paragraph(_escape_text(line[3:].strip()), styles["h2"]))
+            h2_text = _format_markdown_inline(_escape_text(line[3:].strip()))
+            story.append(Paragraph(h2_text, styles["h2"]))
             # Add subtle underline
             story.append(HRFlowable(
                 width="30%",
@@ -371,25 +388,29 @@ def markdown_to_pdf(markdown_text: str, output_path: str, *, title: Optional[str
 
         # H3
         if line.startswith("### "):
-            story.append(Paragraph(_escape_text(line[4:].strip()), styles["h3"]))
+            h3_text = _format_markdown_inline(_escape_text(line[4:].strip()))
+            story.append(Paragraph(h3_text, styles["h3"]))
             continue
 
         # Blockquote
         if line.startswith(">"):
-            quote_text = line.lstrip("> ").strip()
-            story.append(Paragraph(_escape_text(quote_text), styles["quote"]))
+            quote_text = _format_markdown_inline(_escape_text(line.lstrip("> ").strip()))
+            story.append(Paragraph(quote_text, styles["quote"]))
             continue
 
         # Bullet list with colored bullets
         if re.match(r"^\s*[-*]\s+", line):
             item_text = re.sub(r"^\s*[-*]\s+", "", line)
-            colored_item = _add_colored_bullet(item_text)
-            story.append(Paragraph(_escape_text(colored_item), styles["bullet"]))
+            # 先转义文本，再处理格式，最后添加 colored bullet
+            escaped_item = _format_markdown_inline(_escape_text(item_text))
+            colored_item = _add_colored_bullet(escaped_item)
+            story.append(Paragraph(colored_item, styles["bullet"]))
             continue
 
         # Numbered list
         if re.match(r"^\s*\d+\.\s+", line):
-            story.append(Paragraph(_escape_text(line.strip()), styles["base"]))
+            numbered_text = _format_markdown_inline(_escape_text(line.strip()))
+            story.append(Paragraph(numbered_text, styles["base"]))
             continue
 
         # Page break marker
@@ -397,16 +418,9 @@ def markdown_to_pdf(markdown_text: str, output_path: str, *, title: Optional[str
             story.append(PageBreak())
             continue
 
-        # Bold text handling
-        text = line
-        text = re.sub(r'\*\*(.+?)\*\*', r'<b>\1</b>', text)
-        text = re.sub(r'__(.+?)__', r'<b>\1</b>', text)
-
-        # Italic text handling
-        text = re.sub(r'\*(.+?)\*', r'<i>\1</i>', text)
-        text = re.sub(r'_(.+?)_', r'<i>\1</i>', text)
-
-        story.append(Paragraph(_escape_text(text), styles["base"]))
+        # 普通文本：先转义，再处理 Markdown 格式
+        text = _format_markdown_inline(_escape_text(line))
+        story.append(Paragraph(text, styles["base"]))
 
     # Build with header/footer
     def add_page_elements(canvas, doc):

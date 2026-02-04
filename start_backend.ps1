@@ -9,7 +9,6 @@ $OutputEncoding = [System.Text.Encoding]::UTF8
 $env:OPENAI_API_KEY = "sk-cd8fqe8x34tti4t4tfw9d8ktss9pg5l3eq3d2u0dmf0h3lco"
 $env:OPENAI_BASE_URL = "https://api.xiaomimimo.com/v1"
 $env:OPENAI_MODEL = "mimo-v2-flash"
-$env:OPENAI_MAX_TOKENS = "4000"
 
 Write-Host ""
 Write-Host "==========================================" -ForegroundColor Cyan

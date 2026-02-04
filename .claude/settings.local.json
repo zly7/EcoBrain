@@ -3,7 +3,8 @@
     "allow": [
       "Bash(python:*)",
       "Bash(powershell -Command:*)",
-      "Bash(dir:*)"
+      "Bash(dir:*)",
+      "Bash(where:*)"
     ]
   }
 }
