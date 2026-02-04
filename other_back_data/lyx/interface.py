@@ -186,6 +186,7 @@ def materialize(payload: LYXMaterializeInput) -> Dict[str, Any]:
 
     MUST NOT raise.
     """
+    print("[LYX] Starting materialize...")
 
     out_dir = Path(payload.output_dir)
     artifacts_dir = out_dir / "artifacts"
@@ -194,6 +195,7 @@ def materialize(payload: LYXMaterializeInput) -> Dict[str, Any]:
     data_dir = Path(__file__).resolve().parent
     csv_path = _discover_score_file(data_dir)
     if not csv_path:
+        print("[LYX] Error: score csv not found")
         return LYXMaterializeResult(
             ok=False,
             inventory_files=[],
@@ -203,7 +205,9 @@ def materialize(payload: LYXMaterializeInput) -> Dict[str, Any]:
     inv = [str(csv_path)]
 
     try:
+        print(f"[LYX] Loading score table: {csv_path}")
         df = _load_score_table(str(csv_path))
+        print(f"[LYX] Score table loaded, {len(df)} rows")
 
         # Build keyword list (prefer weighted keys)
         keywords = list(payload.industry_weights.keys()) if payload.industry_weights else list(payload.industry_keywords)
@@ -265,6 +269,7 @@ def materialize(payload: LYXMaterializeInput) -> Dict[str, Any]:
 
         out_json = artifacts_dir / "lyx_energy_tendency.json"
         out_json.write_text(json.dumps(result_payload, ensure_ascii=False, indent=2), encoding="utf-8")
+        print(f"[LYX] Completed: {len(keywords)} keywords processed")
 
         return LYXMaterializeResult(
             ok=True,
@@ -284,6 +289,7 @@ def materialize(payload: LYXMaterializeInput) -> Dict[str, Any]:
         ).model_dump()
 
     except Exception as e:
+        print(f"[LYX] Error: {e}")
         return LYXMaterializeResult(
             ok=False,
             inventory_files=inv,

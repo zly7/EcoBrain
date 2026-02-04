@@ -30,13 +30,15 @@ pip install fastapi uvicorn pydantic reportlab pandas geopandas shapely openai
 
 ### 2. 配置 API Key
 
-编辑 `start_backend.ps1`，设置你的 DeepSeek API Key：
+编辑 `start_backend.ps1`，设置你的 OpenAI 兼容 API Key：
 
 ```powershell
-$env:DEEPSEEK_API_KEY = "your-api-key-here"
+$env:OPENAI_API_KEY = "your-api-key-here"
+$env:OPENAI_BASE_URL = "https://your-api-provider.com/v1"
+$env:OPENAI_MODEL = "your-model-name"
 ```
 
-> 获取 API Key: https://platform.deepseek.com/
+> 支持任何 OpenAI 兼容的 API 服务
 
 ### 3. 安装前端依赖
 

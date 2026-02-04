@@ -196,8 +196,24 @@ async def reset_chat() -> dict:
 @app.get("/api/v1/scenarios/{scenario_id}/report/pdf", tags=["report"])
 async def download_pdf_report(scenario_id: str) -> FileResponse:
     """下载 PDF 报告"""
-    # 查找 PDF 文件
-    pdf_path = Path("outputs") / scenario_id / "report.pdf"
+    # 首先尝试从 multi_energy_agent/pdf 目录查找
+    pdf_dir = Path(__file__).parent.parent / "pdf"
+
+    # 查找匹配的 PDF 文件（可能带时间戳前缀）
+    pdf_path = None
+    if pdf_dir.exists():
+        for f in pdf_dir.glob(f"*_{scenario_id}.pdf"):
+            pdf_path = f
+            break
+        if not pdf_path:
+            # 尝试不带时间戳的文件名
+            simple_path = pdf_dir / f"{scenario_id}.pdf"
+            if simple_path.exists():
+                pdf_path = simple_path
+
+    # 如果 pdf 目录没找到，尝试 outputs 目录
+    if not pdf_path or not pdf_path.exists():
+        pdf_path = Path("outputs") / scenario_id / "report.pdf"
 
     if not pdf_path.exists():
         raise HTTPException(status_code=404, detail=f"PDF 报告不存在: {scenario_id}")
@@ -227,22 +243,57 @@ async def download_markdown_report(scenario_id: str) -> FileResponse:
 @app.get("/api/v1/reports", tags=["report"])
 async def list_reports() -> dict:
     """列出所有已生成的报告"""
-    outputs_dir = Path("outputs")
     reports = []
+    seen_scenarios = set()
 
+    # 从 multi_energy_agent/pdf 目录获取 PDF
+    pdf_dir = Path(__file__).parent.parent / "pdf"
+    if pdf_dir.exists():
+        for pdf_file in pdf_dir.glob("*.pdf"):
+            # 解析文件名: YYYYMMDD_HHMMSS_scenario_id.pdf 或 scenario_id.pdf
+            name = pdf_file.stem
+            parts = name.split("_", 2)
+            if len(parts) >= 3 and parts[0].isdigit():
+                scenario_id = parts[2]
+            else:
+                scenario_id = name
+
+            if scenario_id not in seen_scenarios:
+                seen_scenarios.add(scenario_id)
+                reports.append({
+                    "scenario_id": scenario_id,
+                    "has_pdf": True,
+                    "has_md": False,
+                    "pdf_size": pdf_file.stat().st_size,
+                    "md_size": 0,
+                    "pdf_path": str(pdf_file),
+                })
+
+    # 从 outputs 目录获取报告
+    outputs_dir = Path("outputs")
     if outputs_dir.exists():
         for scenario_dir in outputs_dir.iterdir():
             if scenario_dir.is_dir():
+                scenario_id = scenario_dir.name
                 pdf_path = scenario_dir / "report.pdf"
                 md_path = scenario_dir / "report.md"
 
                 if pdf_path.exists() or md_path.exists():
-                    reports.append({
-                        "scenario_id": scenario_dir.name,
-                        "has_pdf": pdf_path.exists(),
-                        "has_md": md_path.exists(),
-                        "pdf_size": pdf_path.stat().st_size if pdf_path.exists() else 0,
-                        "md_size": md_path.stat().st_size if md_path.exists() else 0,
-                    })
+                    if scenario_id in seen_scenarios:
+                        # 更新已有记录
+                        for r in reports:
+                            if r["scenario_id"] == scenario_id:
+                                r["has_md"] = md_path.exists()
+                                r["md_size"] = md_path.stat().st_size if md_path.exists() else 0
+                                break
+                    else:
+                        seen_scenarios.add(scenario_id)
+                        reports.append({
+                            "scenario_id": scenario_id,
+                            "has_pdf": pdf_path.exists(),
+                            "has_md": md_path.exists(),
+                            "pdf_size": pdf_path.stat().st_size if pdf_path.exists() else 0,
+                            "md_size": md_path.stat().st_size if md_path.exists() else 0,
+                        })
 
     return {"reports": reports, "total": len(reports)}

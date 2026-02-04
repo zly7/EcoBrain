@@ -116,6 +116,7 @@ def materialize(payload: EcoKGMaterializeInput) -> Dict[str, Any]:
 
     MUST NOT raise.
     """
+    print("[EcoKG] Starting materialize...")
 
     out_dir = Path(payload.output_dir)
     artifacts_dir = out_dir / "artifacts"
@@ -123,6 +124,7 @@ def materialize(payload: EcoKGMaterializeInput) -> Dict[str, Any]:
 
     data_dir = _kg_data_dir()
     if not data_dir.exists():
+        print(f"[EcoKG] Error: data dir not found: {data_dir}")
         return {
             "ok": False,
             "source_id": "eco_knowledge_graph",
@@ -138,6 +140,7 @@ def materialize(payload: EcoKGMaterializeInput) -> Dict[str, Any]:
         files = sorted([p for p in data_dir.iterdir() if p.suffix.lower() in {".pdf", ".docx"}])
         if payload.max_files:
             files = files[: payload.max_files]
+        print(f"[EcoKG] Found {len(files)} files to process")
 
         corpus_path = artifacts_dir / "eco_kg_corpus.jsonl"
 
@@ -145,7 +148,8 @@ def materialize(payload: EcoKGMaterializeInput) -> Dict[str, Any]:
         doc_stats = []
 
         with corpus_path.open("w", encoding="utf-8") as f:
-            for p in files:
+            for idx, p in enumerate(files):
+                print(f"[EcoKG] Processing file {idx+1}/{len(files)}: {p.name}")
                 if p.suffix.lower() == ".pdf":
                     parts = _extract_pdf_text(p)
                 else:
@@ -168,6 +172,7 @@ def materialize(payload: EcoKGMaterializeInput) -> Dict[str, Any]:
 
                 doc_stats.append({"file": p.name, "chunks": doc_chunks})
 
+        print(f"[EcoKG] Completed: {len(files)} files, {total_chunks} chunks")
         return {
             "ok": True,
             "source_id": "eco_knowledge_graph",
@@ -189,6 +194,7 @@ def materialize(payload: EcoKGMaterializeInput) -> Dict[str, Any]:
         }
 
     except Exception as e:
+        print(f"[EcoKG] Materialize error: {e}")
         return {
             "ok": False,
             "source_id": "eco_knowledge_graph",
@@ -239,11 +245,13 @@ def query(payload: EcoKGQueryInput) -> Dict[str, Any]:
 
     MUST NOT raise.
     """
+    print(f"[EcoKG] Query: {payload.query[:50]}...")
 
     out_dir = Path(payload.output_dir)
     corpus_path = out_dir / "artifacts" / "eco_kg_corpus.jsonl"
 
     if not corpus_path.exists():
+        print(f"[EcoKG] Error: corpus not found: {corpus_path}")
         return {
             "ok": False,
             "source_id": "eco_knowledge_graph",
@@ -257,7 +265,9 @@ def query(payload: EcoKGQueryInput) -> Dict[str, Any]:
         }
 
     try:
+        print("[EcoKG] Building vector index...")
         items, vectorizer, X = _build_vector_index(str(corpus_path))
+        print(f"[EcoKG] Index built, {len(items)} items")
         if X is None or not items:
             return {
                 "ok": True,
@@ -290,6 +300,7 @@ def query(payload: EcoKGQueryInput) -> Dict[str, Any]:
                 }
             )
 
+        print(f"[EcoKG] Query completed: {len(snippets)} snippets found")
         return {
             "ok": True,
             "source_id": "eco_knowledge_graph",
@@ -300,6 +311,7 @@ def query(payload: EcoKGQueryInput) -> Dict[str, Any]:
         }
 
     except Exception as e:
+        print(f"[EcoKG] Query error: {e}")
         return {
             "ok": False,
             "source_id": "eco_knowledge_graph",

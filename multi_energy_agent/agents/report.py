@@ -51,6 +51,10 @@ class ReportOrchestratorAgent(BaseAgent):
         run_ctx = get_run_context(state)
         logger = run_ctx.logger if run_ctx else None
 
+        # PDF 保存目录
+        pdf_dir = Path(run_ctx.pdf_dir) if run_ctx else Path(__file__).parent.parent / "pdf"
+        pdf_dir.mkdir(parents=True, exist_ok=True)
+
         tools = state.get("tools")
         if tools is None:
             raise RuntimeError("tools registry missing in state; DataIntakeAgent should initialize it")
@@ -84,8 +88,15 @@ class ReportOrchestratorAgent(BaseAgent):
         report_md_path.write_text(md, encoding="utf-8")
         plan.mark_done("T9", f"report.md saved: {report_md_path}")
 
+        # PDF 保存到 multi_energy_agent/pdf/ 目录
         plan.mark_doing("T10", "渲染 PDF 并保存到本地")
-        report_pdf_path = out_dir / "report.pdf"
+        ts = run_ctx.run_ts if run_ctx else ""
+        pdf_filename = f"{ts}_{scenario_id}.pdf" if ts else f"{scenario_id}.pdf"
+        report_pdf_path = pdf_dir / pdf_filename
+
+        # 同时也保存一份到 outputs 目录
+        output_pdf_path = out_dir / "report.pdf"
+
         pdf_tool = tools.call(
             "render_pdf_report",
             {
@@ -96,6 +107,12 @@ class ReportOrchestratorAgent(BaseAgent):
         )
         pdf_data = pdf_tool.get("data") or {}
         pdf_ok = bool(pdf_data.get("ok"))
+
+        # 复制 PDF 到 outputs 目录
+        if pdf_ok and report_pdf_path.exists():
+            import shutil
+            shutil.copy2(str(report_pdf_path), str(output_pdf_path))
+
         plan.mark_done("T10", f"report.pdf rendered: ok={pdf_ok} path={report_pdf_path}")
 
         # ---- T11: Generate QA Index ----
@@ -116,6 +133,7 @@ class ReportOrchestratorAgent(BaseAgent):
         if logger:
             logger.info("Report: report_md=%s", report_md_path)
             logger.info("Report: report_pdf=%s ok=%s", report_pdf_path, pdf_ok)
+            logger.info("Report: output_pdf=%s", output_pdf_path)
 
         # ---- envelope ----
         gaps: List[DataGap] = []

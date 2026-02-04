@@ -24,24 +24,31 @@ class RenderPDFReportTool(BaseTool):
     def _run(self, payload: RenderPDFReportInput) -> Dict[str, Any]:
         from pathlib import Path
 
+        print(f"[PDF] Rendering PDF from: {payload.markdown_path}")
         md_path = Path(payload.markdown_path)
         if not md_path.exists():
+            print(f"[PDF] Error: markdown file not found: {md_path}")
             return {
                 "ok": False,
                 "error": {"type": "missing_file", "message": f"markdown_path not found: {md_path}"},
             }
 
         md_text = md_path.read_text(encoding="utf-8", errors="ignore")
-        
+        print(f"[PDF] Markdown loaded, {len(md_text)} chars")
+
         # Try WeasyPrint first, fall back to ReportLab
         try:
+            print("[PDF] Trying WeasyPrint...")
             from ..reporting.pdf_weasyprint import markdown_to_pdf_weasyprint
             pdf_path = markdown_to_pdf_weasyprint(md_text, payload.pdf_path, title=payload.title)
             pdf_engine = "weasyprint"
-        except ImportError:
+            print(f"[PDF] WeasyPrint succeeded: {pdf_path}")
+        except ImportError as e:
+            print(f"[PDF] WeasyPrint not available ({e}), trying ReportLab...")
             from ..reporting.pdf import markdown_to_pdf
             pdf_path = markdown_to_pdf(md_text, payload.pdf_path, title=payload.title)
             pdf_engine = "reportlab"
+            print(f"[PDF] ReportLab succeeded: {pdf_path}")
         
         return {
             "ok": True,

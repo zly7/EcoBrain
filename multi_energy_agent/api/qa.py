@@ -5,7 +5,10 @@ from __future__ import annotations
 import json
 import logging
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from ..utils.logging import RunContext
 
 logger = logging.getLogger(__name__)
 
@@ -13,9 +16,11 @@ logger = logging.getLogger(__name__)
 class ReportQAService:
     """Provides Q&A capabilities over generated reports."""
 
-    def __init__(self, llm_client=None):
+    def __init__(self, llm_client=None, run_context: Optional["RunContext"] = None):
         self.llm_client = llm_client
+        self.run_context = run_context
         self._qa_index_cache: Dict[str, Dict[str, Any]] = {}
+        print("[ReportQAService] Initialized")
 
     def load_qa_index(self, scenario_id: str, output_root: str = "outputs") -> Optional[Dict[str, Any]]:
         """Load QA index for a scenario."""
@@ -106,6 +111,7 @@ class ReportQAService:
         output_root: str = "outputs"
     ) -> Dict[str, Any]:
         """Answer a question about the report."""
+        print(f"[ReportQAService] Answering question: {question[:50]}...")
         # Load QA index and report
         qa_index = self.load_qa_index(scenario_id, output_root)
         if not qa_index:
@@ -169,9 +175,12 @@ class ReportQAService:
         # Generate answer
         if self.llm_client:
             try:
+                print("[ReportQAService] Calling LLM for answer generation...")
                 answer = self._generate_llm_answer(question, context, qa_index)
+                print(f"[ReportQAService] LLM answer generated, length: {len(answer)}")
                 confidence = 0.8
             except Exception as exc:
+                print(f"[ReportQAService] LLM generation failed: {exc}, using fallback")
                 logger.warning(f"LLM generation failed: {exc}, using fallback")
                 answer = self._generate_fallback_answer(question, context, qa_index)
                 confidence = 0.5

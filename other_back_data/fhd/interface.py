@@ -122,7 +122,9 @@ def _stream_excel_profile(
 
     import openpyxl  # type: ignore
 
+    print(f"[FHD] Loading Excel file: {excel_path} (this may take a while for large files...)")
     wb = openpyxl.load_workbook(excel_path, read_only=True, data_only=True)
+    print("[FHD] Excel file loaded, reading data...")
     ws = wb[wb.sheetnames[0]]
 
     header = [c.value for c in next(ws.iter_rows(min_row=1, max_row=1))]
@@ -146,6 +148,8 @@ def _stream_excel_profile(
 
     for row in ws.iter_rows(min_row=2, values_only=True):
         total += 1
+        if total % 20000 == 0:
+            print(f"[FHD] Processed {total} rows...")
         rec = {header[i]: row[i] if i < len(row) else None for i in range(len(header))}
 
         lvl = str(rec.get("级别") or "").strip() or "未知"
@@ -167,6 +171,7 @@ def _stream_excel_profile(
             c_matched_city[city] += 1
 
     wb.close()
+    print(f"[FHD] Completed: {total} total rows, {len(matched)} matched")
 
     # Top lists (avoid huge dicts)
     metrics = {
@@ -207,6 +212,7 @@ def _aoi_summary(
 ) -> Dict[str, Any]:
     """Summarize AOI shapefile using fiona (avoid geopandas/pandas compatibility issues)."""
 
+    print(f"[FHD-AOI] Loading shapefile: {shp_path}")
     import fiona  # type: ignore
     from shapely.geometry import shape  # type: ignore
 
@@ -225,14 +231,17 @@ def _aoi_summary(
     }
 
     try:
+        print("[FHD-AOI] Opening shapefile...")
         with fiona.open(shp_path) as src:
             result["crs"] = src.crs_wkt or (src.crs and str(src.crs))
             result["schema"] = src.schema
             try:
                 result["total_features"] = len(src)
+                print(f"[FHD-AOI] Total features: {result['total_features']}")
             except Exception:
                 # fallback count
                 result["total_features"] = sum(1 for _ in src)
+                print(f"[FHD-AOI] Total features (counted): {result['total_features']}")
 
             try:
                 result["bounds"] = src.bounds
@@ -254,7 +263,12 @@ def _aoi_summary(
                 except Exception:
                     geod = None
 
+            print("[FHD-AOI] Iterating features...")
+            feat_count = 0
             for feat in src:
+                feat_count += 1
+                if feat_count % 20000 == 0:
+                    print(f"[FHD-AOI] Processed {feat_count} features...")
                 props = feat.get("properties") or {}
                 t = str(props.get("TYPE") or "")
                 if t:
@@ -286,6 +300,7 @@ def _aoi_summary(
                                 except Exception:
                                     pass
 
+            print(f"[FHD-AOI] Completed: {feat_count} features, {matched_count} matched")
             result["type_distribution_top"] = c_type.most_common(20)
             result["matched"]["matched_features"] = matched_count
             result["matched"]["bounds"] = matched_bounds
@@ -293,6 +308,7 @@ def _aoi_summary(
                 result["matched"]["area_km2"] = round(matched_area_m2 / 1e6, 4)
 
     except Exception as e:
+        print(f"[FHD-AOI] Error: {e}")
         result["error"] = str(e)
 
     return result

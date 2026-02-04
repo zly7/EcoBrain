@@ -5,10 +5,10 @@
 [Console]::OutputEncoding = [System.Text.Encoding]::UTF8
 $OutputEncoding = [System.Text.Encoding]::UTF8
 
-# Configure DeepSeek API
-$env:DEEPSEEK_API_KEY = "sk-528ef67fe6c54700b6b9eb31fecff922"
-$env:OPENAI_BASE_URL = "https://api.deepseek.com"
-$env:OPENAI_MODEL = "deepseek-chat"
+# Configure Xiaomi API (OpenAI compatible)
+$env:OPENAI_API_KEY = "sk-cd8fqe8x34tti4t4tfw9d8ktss9pg5l3eq3d2u0dmf0h3lco"
+$env:OPENAI_BASE_URL = "https://api.xiaomimimo.com/v1"
+$env:OPENAI_MODEL = "mimo-v2-flash"
 $env:OPENAI_MAX_TOKENS = "4000"
 
 Write-Host ""
@@ -16,7 +16,7 @@ Write-Host "==========================================" -ForegroundColor Cyan
 Write-Host "  EcoBrain Backend Starting..."           -ForegroundColor Cyan
 Write-Host "==========================================" -ForegroundColor Cyan
 Write-Host ""
-Write-Host "LLM: DeepSeek API (deepseek-chat)"        -ForegroundColor Yellow
+Write-Host "LLM: Xiaomi API (mimo-v2-flash)"          -ForegroundColor Yellow
 Write-Host ""
 Write-Host "Server:  http://localhost:8000"           -ForegroundColor Green
 Write-Host "API Doc: http://localhost:8000/docs"      -ForegroundColor Green

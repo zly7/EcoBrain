@@ -10,18 +10,22 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from .llm import StructuredLLMClient
 from .runner import run_scenario
+from .utils.logging import RunContext
 
 
 class ChatAgent:
     """对话式 Agent，支持自然语言查询和报告生成"""
-    
-    def __init__(self, llm: Optional[StructuredLLMClient] = None):
-        self.llm = llm or StructuredLLMClient()
+
+    def __init__(self, llm: Optional[StructuredLLMClient] = None, run_context: Optional[RunContext] = None):
+        self.run_context = run_context
+        self.llm = llm or StructuredLLMClient(run_context=run_context)
         self.conversation_history: List[Dict[str, str]] = []
         self.current_scenario: Optional[Dict[str, Any]] = None
+        print("[ChatAgent] Initialized")
     
     def chat(self, user_message: str) -> str:
         """处理用户消息并返回回复"""
+        print(f"[ChatAgent] Processing message: {user_message[:50]}...")
         # 添加到对话历史
         self.conversation_history.append({
             "role": "user",
@@ -111,7 +115,9 @@ class ChatAgent:
         }, ensure_ascii=False)
         
         try:
+            print("[ChatAgent] Calling LLM for intent analysis...")
             response = self.llm.markdown(system_prompt, user_prompt, fallback=fallback)
+            print(f"[ChatAgent] LLM response received, length: {len(response)}")
             # 提取 JSON
             json_match = re.search(r'\{[^}]+\}', response, re.DOTALL)
             if json_match:
@@ -239,21 +245,24 @@ class ChatAgent:
     
     def _handle_park_query(self, intent: Dict[str, Any]) -> str:
         """处理园区查询"""
+        print(f"[ChatAgent] Handling park query: {intent}")
         # 提取参数
         province = intent.get("province", "")
         city = intent.get("city", "")
         district = intent.get("district", "")
         park_name = intent.get("park_name", "")
         industries = intent.get("industries", [])
-        
+
         if not city and not province:
             return "请告诉我您想查询哪个城市或省份的园区？例如：\n- 查询柳州市汽车产业园区\n- 天津武清开发区\n- 上海电子信息产业园\n- 广西有多少个产业园区"
-        
+
         # 尝试直接查询统计信息
         try:
+            print("[ChatAgent] Loading tool registry...")
             from .tools import default_tool_registry
             tools = default_tool_registry()
-            
+            print("[ChatAgent] Tool registry loaded")
+
             # 构建查询条件
             filters = {
                 "province": province,
@@ -262,8 +271,9 @@ class ChatAgent:
                 "park_name_contains": park_name,
                 "industry_keywords": industries,
             }
-            
+
             # 调用 FHD 工具查询
+            print(f"[ChatAgent] Calling load_fhd_back_data with filters: {filters}")
             fhd_result = tools.call(
                 "load_fhd_back_data",
                 {
@@ -274,7 +284,8 @@ class ChatAgent:
                     "aoi_compute_area_km2": False,
                 }
             )
-            
+            print(f"[ChatAgent] FHD query completed, ok={fhd_result.get('ok')}")
+
             if fhd_result.get("ok"):
                 fhd_data = fhd_result.get("data", {})
                 metrics = fhd_data.get("metrics", {})

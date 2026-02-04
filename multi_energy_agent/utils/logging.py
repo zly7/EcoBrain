@@ -20,13 +20,13 @@ def _tokyo_now() -> datetime:
 
 
 def _timestamp() -> str:
-    # YYMMDD_HHMMSS
-    return _tokyo_now().strftime("%y%m%d_%H%M%S")
+    # YYYYMMDD_HHMMSS
+    return _tokyo_now().strftime("%Y%m%d_%H%M%S")
 
 
 def _repo_root() -> Path:
-    # multi_energy_agent/utils/logging.py -> repo root is 2 levels up
-    return Path(__file__).resolve().parents[2]
+    # multi_energy_agent/utils/logging.py -> multi_energy_agent is 1 level up
+    return Path(__file__).resolve().parents[1]
 
 
 @dataclass
@@ -36,6 +36,7 @@ class RunContext:
     output_dir: str
     logs_running_path: str
     logs_llm_direct_path: str
+    pdf_dir: str
     logger: logging.Logger
 
     def log_llm(self, record: Dict[str, Any]) -> None:
@@ -54,21 +55,24 @@ def init_run_context(
     scenario_id: str,
     *,
     output_dir: str,
-    logs_running_dir: str = "logs_running",
-    logs_llm_direct_dir: str = "logs_llm_direct",
+    logs_running_dir: str = "log/running_log",
+    logs_llm_direct_dir: str = "log/direct_llm_log",
+    pdf_dir: str = "pdf",
 ) -> RunContext:
     """Create a per-run context with isolated log files.
 
-    This avoids global logger handler conflicts and satisfies:
-    - logs_llm_direct/<YYMMDD_HHMMSS>_<scenario>.jsonl
-    - logs_running/<YYMMDD_HHMMSS>_<scenario>.log
+    Log paths:
+    - multi_energy_agent/log/direct_llm_log/<YYYYMMDD_HHMMSS>_<scenario>.jsonl
+    - multi_energy_agent/log/running_log/<YYYYMMDD_HHMMSS>_<scenario>.log
+    - multi_energy_agent/pdf/<scenario>/report.pdf
     """
 
-    root = _repo_root()
+    root = _repo_root()  # multi_energy_agent/
     ts = _timestamp()
 
     logs_running_path = str(root / logs_running_dir / f"{ts}_{scenario_id}.log")
     logs_llm_path = str(root / logs_llm_direct_dir / f"{ts}_{scenario_id}.jsonl")
+    pdf_path = str(root / pdf_dir)
 
     # build a dedicated logger
     logger_name = f"multi_energy_agent.{scenario_id}.{ts}"
@@ -100,12 +104,18 @@ def init_run_context(
         output_dir=output_dir,
         logs_running_path=logs_running_path,
         logs_llm_direct_path=logs_llm_path,
+        pdf_dir=pdf_path,
         logger=logger,
     )
 
-    ctx.logger.info("RunContext initialized: scenario_id=%s ts=%s", scenario_id, ts)
-    ctx.logger.info("logs_running=%s", logs_running_path)
-    ctx.logger.info("logs_llm_direct=%s", logs_llm_path)
+    ctx.logger.info("=" * 60)
+    ctx.logger.info("RunContext initialized")
+    ctx.logger.info("  scenario_id: %s", scenario_id)
+    ctx.logger.info("  timestamp: %s", ts)
+    ctx.logger.info("  running_log: %s", logs_running_path)
+    ctx.logger.info("  llm_log: %s", logs_llm_path)
+    ctx.logger.info("  pdf_dir: %s", pdf_path)
+    ctx.logger.info("=" * 60)
     return ctx
 
 

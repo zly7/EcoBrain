@@ -32,11 +32,12 @@ class StructuredLLMClient:
             if self.run_context:
                 self.run_context.log_llm(record)
 
-        # Support both OPENAI_API_KEY and DEEPSEEK_API_KEY
-        api_key = os.getenv("OPENAI_API_KEY") or os.getenv("DEEPSEEK_API_KEY")
+        # Use OPENAI_API_KEY only
+        api_key = os.getenv("OPENAI_API_KEY")
         base_url = os.getenv("OPENAI_BASE_URL")
-        
+
         if not api_key:
+            print("[LLM WARNING] OPENAI_API_KEY not set, using fallback")
             content = fallback or user_prompt
             _log(
                 {
@@ -57,11 +58,12 @@ class StructuredLLMClient:
         try:
             from openai import OpenAI  # type: ignore
 
-            # Initialize client with optional base_url for DeepSeek or other providers
+            # Initialize client with optional base_url for custom providers
             client_kwargs = {"api_key": api_key}
             if base_url:
                 client_kwargs["base_url"] = base_url
-            
+
+            print(f"[LLM] Calling {self.model} (max_tokens={self.max_tokens})...")
             client = OpenAI(**client_kwargs)
             resp = client.chat.completions.create(
                 model=self.model,
@@ -73,6 +75,7 @@ class StructuredLLMClient:
                 ],
             )
             content = (resp.choices[0].message.content or "").strip()
+            print(f"[LLM] Response received, length: {len(content)} chars")
             final = content or (fallback or user_prompt)
             _log(
                 {
@@ -90,6 +93,7 @@ class StructuredLLMClient:
             return final
         except Exception as e:
             # Fallback path: try legacy openai package (if present), otherwise return fallback.
+            print(f"[LLM WARNING] Modern OpenAI SDK failed: {str(e)}, trying legacy...")
             try:
                 import openai  # type: ignore
 
@@ -122,6 +126,7 @@ class StructuredLLMClient:
                 )
                 return final
             except Exception as e2:
+                print(f"[LLM ERROR] LLM call failed: {str(e)}, {str(e2)}")
                 content = fallback or user_prompt
                 _log(
                     {
