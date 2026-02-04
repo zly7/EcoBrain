@@ -1,0 +1,3840 @@
+{
+  "kg_version": "demo-park-policy-kg-v0.2",
+  "generated_at": "2026-01-12T02:50:50.647503Z",
+  "notes": "Mock integrated KG. Replace mock_sources with real survey/crawl/policy extract when available.",
+  "graph": {
+    "nodes": [
+      {
+        "id": "PARK_da18f4314b",
+        "type": "Park",
+        "name": "示例产业园（虚拟-苏州）",
+        "props": {
+          "region_id": "cn-suzhou-industrial-park",
+          "admin_codes": [
+            "320500",
+            "320571"
+          ],
+          "area_km2": 15.3,
+          "center_lat": 31.31,
+          "center_lon": 120.705
+        },
+        "refs": [
+          {
+            "source": "field_survey",
+            "uri": "D:\\ml_pro_master\\energy_llm\\multi_enengy_agent\\data\\mock_sources\\field_survey.json",
+            "retrieved_at": "2026-01-12T02:50:50.647503Z"
+          }
+        ]
+      },
+      {
+        "id": "ADMINREGION_c2787b0870",
+        "type": "AdminRegion",
+        "name": "320500",
+        "props": {
+          "admin_code": "320500"
+        },
+        "refs": [
+          {
+            "source": "field_survey",
+            "uri": "D:\\ml_pro_master\\energy_llm\\multi_enengy_agent\\data\\mock_sources\\field_survey.json",
+            "retrieved_at": "2026-01-12T02:50:50.647503Z"
+          },
+          {
+            "source": "policy_report_extract",
+            "uri": "D:\\ml_pro_master\\energy_llm\\multi_enengy_agent\\data\\mock_sources\\policy_report_extract.json",
+            "retrieved_at": "2026-01-12T02:50:50.647503Z"
+          },
+          {
+            "source": "policy_report_extract",
+            "uri": "D:\\ml_pro_master\\energy_llm\\multi_enengy_agent\\data\\mock_sources\\policy_report_extract.json",
+            "retrieved_at": "2026-01-12T02:50:50.647503Z"
+          },
+          {
+            "source": "policy_report_extract",
+            "uri": "D:\\ml_pro_master\\energy_llm\\multi_enengy_agent\\data\\mock_sources\\policy_report_extract.json",
+            "retrieved_at": "2026-01-12T02:50:50.647503Z"
+          }
+        ]
+      },
+      {
+        "id": "ADMINREGION_3a21184a5d",
+        "type": "AdminRegion",
+        "name": "320571",
+        "props": {
+          "admin_code": "320571"
+        },
+        "refs": [
+          {
+            "source": "field_survey",
+            "uri": "D:\\ml_pro_master\\energy_llm\\multi_enengy_agent\\data\\mock_sources\\field_survey.json",
+            "retrieved_at": "2026-01-12T02:50:50.647503Z"
+          }
+        ]
+      },
+      {
+        "id": "ORGANIZATION_5fa961c1ba",
+        "type": "Organization",
+        "name": "示例发改委/工信局（虚拟）",
+        "props": {
+          "org_type": "government"
+        },
+        "refs": [
+          {
+            "source": "field_survey",
+            "uri": "D:\\ml_pro_master\\energy_llm\\multi_enengy_agent\\data\\mock_sources\\field_survey.json",
+            "retrieved_at": "2026-01-12T02:50:50.647503Z"
+          }
+        ]
+      },
+      {
+        "id": "REQUIREMENT_799a088fda",
+        "type": "Requirement",
+        "name": "政府KPI与约束",
+        "props": {
+          "details": {
+            "kpi_targets": {
+              "carbon": {
+                "target": {
+                  "year": 2030,
+                  "type": "relative_reduction",
+                  "value": 0.35,
+                  "baseline_year": 2023
+                },
+                "audit_chain": {
+                  "required": true,
+                  "tools": {
+                    "MRV": [
+                      "计量表计",
+                      "第三方核查"
+                    ],
+                    "data_platform": [
+                      "园区能管平台"
+                    ]
+                  }
+                }
+              },
+              "energy": {
+                "energy_intensity_reduction": {
+                  "year": 2028,
+                  "value": 0.18,
+                  "unit": "MWh/产值",
+                  "sector_priority": [
+                    "C26",
+                    "C30"
+                  ]
+                }
+              },
+              "investment": {
+                "招商引资": {
+                  "target_industries": [
+                    {
+                      "industry_code": "C34",
+                      "reason": "高端装备+电气化潜力"
+                    },
+                    {
+                      "industry_code": "C39",
+                      "reason": "电子信息产业集群"
+                    }
+                  ],
+                  "required_materials": {
+                    "investment_case": {
+                      "include": [
+                        "能源成本对比",
+                        "碳排指标可得性",
+                        "绿电/绿证路径",
+                        "余热/蒸汽供应稳定性"
+                      ],
+                      "format": {
+                        "dashboard": true,
+                        "report": true,
+                        "sankey": true
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "policy_constraints": {
+              "red_lines": {
+                "energy_consumption_cap": {
+                  "value": 2.8,
+                  "unit": "TWh/year",
+                  "type": "hard"
+                },
+                "coal_control": {
+                  "new_coal_boiler": "prohibited"
+                }
+              },
+              "approval": {
+                "eia_required": true,
+                "grid_connection_process": {
+                  "owner": "grid_company",
+                  "typical_days": 45
+                }
+              }
+            }
+          }
+        },
+        "refs": [
+          {
+            "source": "field_survey",
+            "uri": "D:\\ml_pro_master\\energy_llm\\multi_enengy_agent\\data\\mock_sources\\field_survey.json",
+            "retrieved_at": "2026-01-12T02:50:50.647503Z"
+          }
+        ]
+      },
+      {
+        "id": "ORGANIZATION_d3d1304f5c",
+        "type": "Organization",
+        "name": "示例园区运营公司（虚拟）",
+        "props": {
+          "org_type": "park_operator",
+          "needs": {
+            "cost": {
+              "pain_points": [
+                {
+                  "item": "尖峰电价",
+                  "impact": "用电成本高",
+                  "priority": "high"
+                },
+                {
+                  "item": "蒸汽价格波动",
+                  "impact": "部分企业外购蒸汽不稳定",
+                  "priority": "medium"
+                }
+              ],
+              "targets": {
+                "opex_reduction_pct": {
+                  "value": 0.08,
+                  "year": 2027
+                },
+                "energy_management": {
+                  "platform_upgrade": true
+                }
+              }
+            },
+            "carbon": {
+              "wants": [
+                "统一核算口径",
+                "可解释的减排拆解",
+                "对外招商材料"
+              ]
+            },
+            "data": {
+              "available": [
+                {
+                  "dataset": "企业名录",
+                  "format": "csv",
+                  "update": "quarterly"
+                },
+                {
+                  "dataset": "电力总表",
+                  "format": "monthly",
+                  "update": "monthly"
+                }
+              ],
+              "restricted": [
+                {
+                  "dataset": "企业分表",
+                  "reason": "商业敏感",
+                  "access": "需签NDA"
+                }
+              ]
+            }
+          }
+        },
+        "refs": [
+          {
+            "source": "field_survey",
+            "uri": "D:\\ml_pro_master\\energy_llm\\multi_enengy_agent\\data\\mock_sources\\field_survey.json",
+            "retrieved_at": "2026-01-12T02:50:50.647503Z"
+          }
+        ]
+      },
+      {
+        "id": "INDUSTRY_529275d5f6",
+        "type": "Industry",
+        "name": "化学原料和化学制品制造业（示例）",
+        "props": {
+          "industry_code": "C26",
+          "electricity_mwh_per_billion_output": 5200.0,
+          "thermal_mwh_per_billion_output": 6800.0,
+          "waste_heat_grade": "low_to_mid",
+          "waste_heat_potential_mwh_per_billion_output": 1100.0,
+          "common_measures": "WASTE_HEAT|EE_MOTOR|PV_ROOF",
+          "investment_priority_hint": "副产物/余热耦合空间大，适合构建园区能量梯级利用示范"
+        },
+        "refs": [
+          {
+            "source": "industry_energy_scale",
+            "uri": "D:\\ml_pro_master\\energy_llm\\multi_enengy_agent\\data\\mock_sources\\industry_energy_scale.csv",
+            "retrieved_at": "2026-01-12T02:50:50.647503Z"
+          },
+          {
+            "source": "enterprise_registry",
+            "uri": "D:\\ml_pro_master\\energy_llm\\multi_enengy_agent\\data\\mock_sources\\enterprise_registry.csv",
+            "retrieved_at": "2026-01-12T02:50:50.647503Z"
+          },
+          {
+            "source": "policy_report_extract",
+            "uri": "D:\\ml_pro_master\\energy_llm\\multi_enengy_agent\\data\\mock_sources\\policy_report_extract.json",
+            "retrieved_at": "2026-01-12T02:50:50.647503Z"
+          },
+          {
+            "source": "policy_report_extract",
+            "uri": "D:\\ml_pro_master\\energy_llm\\multi_enengy_agent\\data\\mock_sources\\policy_report_extract.json",
+            "retrieved_at": "2026-01-12T02:50:50.647503Z"
+          }
+        ]
+      },
+      {
+        "id": "INDUSTRY_99351a6718",
+        "type": "Industry",
+        "name": "非金属矿物制品业（示例）",
+        "props": {
+          "industry_code": "C30",
+          "electricity_mwh_per_billion_output": 7600.0,
+          "thermal_mwh_per_billion_output": 2400.0,
+          "waste_heat_grade": "mid_to_high",
+          "waste_heat_potential_mwh_per_billion_output": 1900.0,
+          "common_measures": "WASTE_HEAT|BESS_TOU|PV_ROOF",
+          "investment_priority_hint": "窑炉负荷+余热，适合热泵/ORC/储能联合"
+        },
+        "refs": [
+          {
+            "source": "industry_energy_scale",
+            "uri": "D:\\ml_pro_master\\energy_llm\\multi_enengy_agent\\data\\mock_sources\\industry_energy_scale.csv",
+            "retrieved_at": "2026-01-12T02:50:50.647503Z"
+          },
+          {
+            "source": "enterprise_registry",
+            "uri": "D:\\ml_pro_master\\energy_llm\\multi_enengy_agent\\data\\mock_sources\\enterprise_registry.csv",
+            "retrieved_at": "2026-01-12T02:50:50.647503Z"
+          },
+          {
+            "source": "policy_report_extract",
+            "uri": "D:\\ml_pro_master\\energy_llm\\multi_enengy_agent\\data\\mock_sources\\policy_report_extract.json",
+            "retrieved_at": "2026-01-12T02:50:50.647503Z"
+          },
+          {
+            "source": "policy_report_extract",
+            "uri": "D:\\ml_pro_master\\energy_llm\\multi_enengy_agent\\data\\mock_sources\\policy_report_extract.json",
+            "retrieved_at": "2026-01-12T02:50:50.647503Z"
+          }
+        ]
+      },
+      {
+        "id": "INDUSTRY_78479a144b",
+        "type": "Industry",
+        "name": "通用设备制造业（示例）",
+        "props": {
+          "industry_code": "C34",
+          "electricity_mwh_per_billion_output": 3200.0,
+          "thermal_mwh_per_billion_output": 800.0,
+          "waste_heat_grade": "low",
+          "waste_heat_potential_mwh_per_billion_output": 250.0,
+          "common_measures": "EE_MOTOR|PV_ROOF|BESS_TOU",
+          "investment_priority_hint": "电气化程度高，可作为绿电消纳+储能示范"
+        },
+        "refs": [
+          {
+            "source": "industry_energy_scale",
+            "uri": "D:\\ml_pro_master\\energy_llm\\multi_enengy_agent\\data\\mock_sources\\industry_energy_scale.csv",
+            "retrieved_at": "2026-01-12T02:50:50.647503Z"
+          },
+          {
+            "source": "enterprise_registry",
+            "uri": "D:\\ml_pro_master\\energy_llm\\multi_enengy_agent\\data\\mock_sources\\enterprise_registry.csv",
+            "retrieved_at": "2026-01-12T02:50:50.647503Z"
+          },
+          {
+            "source": "policy_report_extract",
+            "uri": "D:\\ml_pro_master\\energy_llm\\multi_enengy_agent\\data\\mock_sources\\policy_report_extract.json",
+            "retrieved_at": "2026-01-12T02:50:50.647503Z"
+          }
+        ]
+      },
+      {
+        "id": "ENTERPRISE_e1c22b48fc",
+        "type": "Enterprise",
+        "name": "苏澄精细化工（虚拟）",
+        "props": {
+          "enterprise_id": "ENT_001",
+          "industry_code": "C26",
+          "employees": 820,
+          "output_value_million_cny": 2200,
+          "has_boiler": "True",
+          "has_waste_heat": "True",
+          "has_roof_pv_ready": "True",
+          "notes": "余热以冷却水为主；锅炉效率偏低",
+          "main_products": [
+            "溶剂",
+            "树脂",
+            "功能助剂"
+          ],
+          "land_area_m2": 120000
+        },
+        "refs": [
+          {
+            "source": "enterprise_registry",
+            "uri": "D:\\ml_pro_master\\energy_llm\\multi_enengy_agent\\data\\mock_sources\\enterprise_registry.csv",
+            "retrieved_at": "2026-01-12T02:50:50.647503Z"
+          },
+          {
+            "source": "field_survey",
+            "uri": "D:\\ml_pro_master\\energy_llm\\multi_enengy_agent\\data\\mock_sources\\field_survey.json",
+            "retrieved_at": "2026-01-12T02:50:50.647503Z"
+          }
+        ]
+      },
+      {
+        "id": "ENTERPRISE_fd9e1f3aa7",
+        "type": "Enterprise",
+        "name": "新材非金属制品（虚拟）",
+        "props": {
+          "enterprise_id": "ENT_002",
+          "industry_code": "C30",
+          "employees": 460,
+          "output_value_million_cny": 980,
+          "has_boiler": "False",
+          "has_waste_heat": "True",
+          "has_roof_pv_ready": "False",
+          "notes": "电窑负荷高，适合储能+余热",
+          "main_products": [
+            "高性能陶瓷基板",
+            "耐磨衬板"
+          ],
+          "land_area_m2": 86000
+        },
+        "refs": [
+          {
+            "source": "enterprise_registry",
+            "uri": "D:\\ml_pro_master\\energy_llm\\multi_enengy_agent\\data\\mock_sources\\enterprise_registry.csv",
+            "retrieved_at": "2026-01-12T02:50:50.647503Z"
+          },
+          {
+            "source": "field_survey",
+            "uri": "D:\\ml_pro_master\\energy_llm\\multi_enengy_agent\\data\\mock_sources\\field_survey.json",
+            "retrieved_at": "2026-01-12T02:50:50.647503Z"
+          }
+        ]
+      },
+      {
+        "id": "ENTERPRISE_000dc9fc4e",
+        "type": "Enterprise",
+        "name": "高端装备零部件（虚拟）",
+        "props": {
+          "enterprise_id": "ENT_003",
+          "industry_code": "C34",
+          "employees": 310,
+          "output_value_million_cny": 760,
+          "has_boiler": "False",
+          "has_waste_heat": "low_grade",
+          "has_roof_pv_ready": "True",
+          "notes": "电机系统改造潜力较大",
+          "main_products": [
+            "精密轴承",
+            "伺服部件"
+          ],
+          "land_area_m2": 54000
+        },
+        "refs": [
+          {
+            "source": "enterprise_registry",
+            "uri": "D:\\ml_pro_master\\energy_llm\\multi_enengy_agent\\data\\mock_sources\\enterprise_registry.csv",
+            "retrieved_at": "2026-01-12T02:50:50.647503Z"
+          },
+          {
+            "source": "field_survey",
+            "uri": "D:\\ml_pro_master\\energy_llm\\multi_enengy_agent\\data\\mock_sources\\field_survey.json",
+            "retrieved_at": "2026-01-12T02:50:50.647503Z"
+          }
+        ]
+      },
+      {
+        "id": "REQUIREMENT_30d470bb96",
+        "type": "Requirement",
+        "name": "ENT_001 需求与约束",
+        "props": {
+          "capex_budget_million_cny": 25,
+          "preferred_measures": [
+            {
+              "measure_id": "WASTE_HEAT",
+              "reason": "有稳定余热源"
+            },
+            {
+              "measure_id": "EE_MOTOR",
+              "reason": "泵/风机多"
+            }
+          ],
+          "constraints": {
+            "production_continuity": "must_keep",
+            "shutdown_window_days": 7,
+            "safety": {
+              "hot_work": "permit_required"
+            }
+          }
+        },
+        "refs": [
+          {
+            "source": "field_survey",
+            "uri": "D:\\ml_pro_master\\energy_llm\\multi_enengy_agent\\data\\mock_sources\\field_survey.json",
+            "retrieved_at": "2026-01-12T02:50:50.647503Z"
+          }
+        ]
+      },
+      {
+        "id": "PLANT_ecd7c962e0",
+        "type": "Plant",
+        "name": "ENT_001:PLANT_A",
+        "props": {
+          "enterprise_id": "ENT_001",
+          "plant_id": "PLANT_A"
+        },
+        "refs": [
+          {
+            "source": "field_survey",
+            "uri": "D:\\ml_pro_master\\energy_llm\\multi_enengy_agent\\data\\mock_sources\\field_survey.json",
+            "retrieved_at": "2026-01-12T02:50:50.647503Z"
+          }
+        ]
+      },
+      {
+        "id": "WORKSHOP_0da2c37013",
+        "type": "Workshop",
+        "name": "ENT_001:WS_A1",
+        "props": {
+          "workshop_id": "WS_A1"
+        },
+        "refs": [
+          {
+            "source": "field_survey",
+            "uri": "D:\\ml_pro_master\\energy_llm\\multi_enengy_agent\\data\\mock_sources\\field_survey.json",
+            "retrieved_at": "2026-01-12T02:50:50.647503Z"
+          }
+        ]
+      },
+      {
+        "id": "PROCESSLINE_1dcf5839b0",
+        "type": "ProcessLine",
+        "name": "ENT_001:LINE_A1_01",
+        "props": {
+          "line_id": "LINE_A1_01"
+        },
+        "refs": [
+          {
+            "source": "field_survey",
+            "uri": "D:\\ml_pro_master\\energy_llm\\multi_enengy_agent\\data\\mock_sources\\field_survey.json",
+            "retrieved_at": "2026-01-12T02:50:50.647503Z"
+          }
+        ]
+      },
+      {
+        "id": "PROCESSUNIT_117ea241a7",
+        "type": "ProcessUnit",
+        "name": "反应釜组",
+        "props": {
+          "unit_id": "UNIT_A1_01_REACT",
+          "enterprise_id": "ENT_001",
+          "line_id": "LINE_A1_01"
+        },
+        "refs": [
+          {
+            "source": "field_survey",
+            "uri": "D:\\ml_pro_master\\energy_llm\\multi_enengy_agent\\data\\mock_sources\\field_survey.json",
+            "retrieved_at": "2026-01-12T02:50:50.647503Z"
+          }
+        ]
+      },
+      {
+        "id": "EQUIPMENT_e3e29c2a75",
+        "type": "Equipment",
+        "name": "reactor:EQ_REACTOR_01",
+        "props": {
+          "equipment_id": "EQ_REACTOR_01",
+          "equipment_type": "reactor",
+          "design": {
+            "volume_m3": 25,
+            "jacket": {
+              "heat_medium": "steam",
+              "max_temp_c": 200,
+              "heat_transfer_area_m2": 42
+            }
+          }
+        },
+        "refs": [
+          {
+            "source": "field_survey",
+            "uri": "D:\\ml_pro_master\\energy_llm\\multi_enengy_agent\\data\\mock_sources\\field_survey.json",
+            "retrieved_at": "2026-01-12T02:50:50.647503Z"
+          }
+        ]
+      },
+      {
+        "id": "ENERGYDEMAND_15c309edd3",
+        "type": "EnergyDemand",
+        "name": "ENT_001:EQ_REACTOR_01 energy_demand",
+        "props": {
+          "carriers": {
+            "electricity": {
+              "avg_kw": 180,
+              "peak_kw": 260,
+              "meter": {
+                "id": "MTR_E_001",
+                "accuracy": "0.5S"
+              }
+            },
+            "steam": {
+              "avg_tph": 6.5,
+              "pressure_mpa": 1.0,
+              "temperature_c": 185,
+              "meter": {
+                "id": "MTR_S_001",
+                "accuracy": "1.0"
+              }
+            },
+            "natural_gas": {
+              "avg_nm3_h": 0,
+              "note": "主要蒸汽外购/自备锅炉"
+            }
+          },
+          "time_series": {
+            "resolution": "hour",
+            "profiles": {
+              "weekday": {
+                "hourly_kw": [
+                  160,
+                  150,
+                  145,
+                  142,
+                  140,
+                  150,
+                  175,
+                  200,
+                  220,
+                  240,
+                  250,
+                  255,
+                  260,
+                  255,
+                  250,
+                  245,
+                  240,
+                  235,
+                  230,
+                  220,
+                  210,
+                  195,
+                  180,
+                  170
+                ],
+                "notes": {
+                  "seasonality": {
+                    "winter": {
+                      "steam_tph_multiplier": 1.08
+                    },
+                    "summer": {
+                      "cooling_kw_multiplier": 1.12
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "refs": [
+          {
+            "source": "field_survey",
+            "uri": "D:\\ml_pro_master\\energy_llm\\multi_enengy_agent\\data\\mock_sources\\field_survey.json",
+            "retrieved_at": "2026-01-12T02:50:50.647503Z"
+          }
+        ]
+      },
+      {
+        "id": "WASTEHEATSTREAM_bd017811ee",
+        "type": "WasteHeatStream",
+        "name": "waste_heat:WH_A1_01",
+        "props": {
+          "source_id": "WH_A1_01",
+          "type": "cooling_water",
+          "temp_in_c": 38,
+          "temp_out_c": 55,
+          "flow_m3_h": 620,
+          "available_mw": 2.6,
+          "availability": {
+            "schedule": {
+              "weekday": 0.85,
+              "weekend": 0.6
+            },
+            "constraints": {
+              "shutdown_days_per_year": 12
+            }
+          },
+          "potential_uses": {
+            "internal": [
+              {
+                "use": "热泵提温供洗涤",
+                "temp_c": 70,
+                "est_mw": 1.2
+              },
+              {
+                "use": "工艺预热",
+                "temp_c": 60,
+                "est_mw": 0.6
+              }
+            ],
+            "external": [
+              {
+                "candidate": "ENT_003",
+                "use": "清洗热水",
+                "temp_c": 50,
+                "est_mw": 0.4
+              }
+            ]
+          }
+        },
+        "refs": [
+          {
+            "source": "field_survey",
+            "uri": "D:\\ml_pro_master\\energy_llm\\multi_enengy_agent\\data\\mock_sources\\field_survey.json",
+            "retrieved_at": "2026-01-12T02:50:50.647503Z"
+          }
+        ]
+      },
+      {
+        "id": "REQUIREMENT_7e9b059ed6",
+        "type": "Requirement",
+        "name": "ENT_002 需求与约束",
+        "props": {
+          "capex_budget_million_cny": 18,
+          "preferred_measures": [
+            {
+              "measure_id": "WASTE_HEAT",
+              "reason": "高温烟气余热"
+            },
+            {
+              "measure_id": "BESS_TOU",
+              "reason": "电窑负荷高，削峰潜力"
+            }
+          ],
+          "constraints": {
+            "quality": "strict_temperature_control"
+          }
+        },
+        "refs": [
+          {
+            "source": "field_survey",
+            "uri": "D:\\ml_pro_master\\energy_llm\\multi_enengy_agent\\data\\mock_sources\\field_survey.json",
+            "retrieved_at": "2026-01-12T02:50:50.647503Z"
+          }
+        ]
+      },
+      {
+        "id": "PLANT_24656e0ab6",
+        "type": "Plant",
+        "name": "ENT_002:PLANT_B",
+        "props": {
+          "enterprise_id": "ENT_002",
+          "plant_id": "PLANT_B"
+        },
+        "refs": [
+          {
+            "source": "field_survey",
+            "uri": "D:\\ml_pro_master\\energy_llm\\multi_enengy_agent\\data\\mock_sources\\field_survey.json",
+            "retrieved_at": "2026-01-12T02:50:50.647503Z"
+          }
+        ]
+      },
+      {
+        "id": "WORKSHOP_6135308e1e",
+        "type": "Workshop",
+        "name": "ENT_002:WS_B1",
+        "props": {
+          "workshop_id": "WS_B1"
+        },
+        "refs": [
+          {
+            "source": "field_survey",
+            "uri": "D:\\ml_pro_master\\energy_llm\\multi_enengy_agent\\data\\mock_sources\\field_survey.json",
+            "retrieved_at": "2026-01-12T02:50:50.647503Z"
+          }
+        ]
+      },
+      {
+        "id": "PROCESSLINE_3f45742517",
+        "type": "ProcessLine",
+        "name": "ENT_002:LINE_B1_01",
+        "props": {
+          "line_id": "LINE_B1_01"
+        },
+        "refs": [
+          {
+            "source": "field_survey",
+            "uri": "D:\\ml_pro_master\\energy_llm\\multi_enengy_agent\\data\\mock_sources\\field_survey.json",
+            "retrieved_at": "2026-01-12T02:50:50.647503Z"
+          }
+        ]
+      },
+      {
+        "id": "PROCESSUNIT_735b7c7921",
+        "type": "ProcessUnit",
+        "name": "电窑炉",
+        "props": {
+          "unit_id": "UNIT_B1_KILN",
+          "enterprise_id": "ENT_002",
+          "line_id": "LINE_B1_01"
+        },
+        "refs": [
+          {
+            "source": "field_survey",
+            "uri": "D:\\ml_pro_master\\energy_llm\\multi_enengy_agent\\data\\mock_sources\\field_survey.json",
+            "retrieved_at": "2026-01-12T02:50:50.647503Z"
+          }
+        ]
+      },
+      {
+        "id": "EQUIPMENT_35e7bea5fb",
+        "type": "Equipment",
+        "name": "electric_kiln:EQ_KILN_01",
+        "props": {
+          "equipment_id": "EQ_KILN_01",
+          "equipment_type": "electric_kiln",
+          "design": {}
+        },
+        "refs": [
+          {
+            "source": "field_survey",
+            "uri": "D:\\ml_pro_master\\energy_llm\\multi_enengy_agent\\data\\mock_sources\\field_survey.json",
+            "retrieved_at": "2026-01-12T02:50:50.647503Z"
+          }
+        ]
+      },
+      {
+        "id": "ENERGYDEMAND_70f3b9ffcc",
+        "type": "EnergyDemand",
+        "name": "ENT_002:EQ_KILN_01 energy_demand",
+        "props": {
+          "carriers": {
+            "electricity": {
+              "avg_kw": 820,
+              "peak_kw": 1100
+            }
+          },
+          "time_series": {
+            "resolution": "hour",
+            "profiles": {
+              "weekday": {
+                "hourly_kw": [
+                  700,
+                  700,
+                  700,
+                  700,
+                  700,
+                  700,
+                  700,
+                  700,
+                  700,
+                  700,
+                  700,
+                  700,
+                  700,
+                  700,
+                  700,
+                  700,
+                  700,
+                  700,
+                  700,
+                  700,
+                  700,
+                  700,
+                  700,
+                  700
+                ]
+              }
+            }
+          }
+        },
+        "refs": [
+          {
+            "source": "field_survey",
+            "uri": "D:\\ml_pro_master\\energy_llm\\multi_enengy_agent\\data\\mock_sources\\field_survey.json",
+            "retrieved_at": "2026-01-12T02:50:50.647503Z"
+          }
+        ]
+      },
+      {
+        "id": "WASTEHEATSTREAM_050256f0f0",
+        "type": "WasteHeatStream",
+        "name": "waste_heat:WH_B1_01",
+        "props": {
+          "source_id": "WH_B1_01",
+          "type": "flue_gas",
+          "temp_c": 260,
+          "available_mw": 3.4,
+          "potential_uses": {
+            "internal": [
+              {
+                "use": "烘干预热",
+                "temp_c": 120,
+                "est_mw": 1.0
+              }
+            ],
+            "external": [
+              {
+                "candidate": "park_heat_loop",
+                "use": "区域供热",
+                "temp_c": 80,
+                "est_mw": 1.2
+              }
+            ]
+          }
+        },
+        "refs": [
+          {
+            "source": "field_survey",
+            "uri": "D:\\ml_pro_master\\energy_llm\\multi_enengy_agent\\data\\mock_sources\\field_survey.json",
+            "retrieved_at": "2026-01-12T02:50:50.647503Z"
+          }
+        ]
+      },
+      {
+        "id": "ENERGYNETWORK_013faed902",
+        "type": "EnergyNetwork",
+        "name": "园区余热环网（规划）",
+        "props": {
+          "status": "planned"
+        },
+        "refs": [
+          {
+            "source": "field_survey",
+            "uri": "D:\\ml_pro_master\\energy_llm\\multi_enengy_agent\\data\\mock_sources\\field_survey.json",
+            "retrieved_at": "2026-01-12T02:50:50.647503Z"
+          }
+        ]
+      },
+      {
+        "id": "REQUIREMENT_5d714a5626",
+        "type": "Requirement",
+        "name": "ENT_003 需求与约束",
+        "props": {
+          "capex_budget_million_cny": 9,
+          "preferred_measures": [
+            {
+              "measure_id": "EE_MOTOR",
+              "reason": "空压/循环水系统"
+            }
+          ],
+          "constraints": {
+            "space": "limited_roof_area"
+          }
+        },
+        "refs": [
+          {
+            "source": "field_survey",
+            "uri": "D:\\ml_pro_master\\energy_llm\\multi_enengy_agent\\data\\mock_sources\\field_survey.json",
+            "retrieved_at": "2026-01-12T02:50:50.647503Z"
+          }
+        ]
+      },
+      {
+        "id": "PLANT_31720379e6",
+        "type": "Plant",
+        "name": "ENT_003:PLANT_C",
+        "props": {
+          "enterprise_id": "ENT_003",
+          "plant_id": "PLANT_C"
+        },
+        "refs": [
+          {
+            "source": "field_survey",
+            "uri": "D:\\ml_pro_master\\energy_llm\\multi_enengy_agent\\data\\mock_sources\\field_survey.json",
+            "retrieved_at": "2026-01-12T02:50:50.647503Z"
+          }
+        ]
+      },
+      {
+        "id": "WORKSHOP_7b20b0ae6e",
+        "type": "Workshop",
+        "name": "ENT_003:WS_C1",
+        "props": {
+          "workshop_id": "WS_C1"
+        },
+        "refs": [
+          {
+            "source": "field_survey",
+            "uri": "D:\\ml_pro_master\\energy_llm\\multi_enengy_agent\\data\\mock_sources\\field_survey.json",
+            "retrieved_at": "2026-01-12T02:50:50.647503Z"
+          }
+        ]
+      },
+      {
+        "id": "PROCESSLINE_6a02ca89ca",
+        "type": "ProcessLine",
+        "name": "ENT_003:LINE_C1_01",
+        "props": {
+          "line_id": "LINE_C1_01"
+        },
+        "refs": [
+          {
+            "source": "field_survey",
+            "uri": "D:\\ml_pro_master\\energy_llm\\multi_enengy_agent\\data\\mock_sources\\field_survey.json",
+            "retrieved_at": "2026-01-12T02:50:50.647503Z"
+          }
+        ]
+      },
+      {
+        "id": "PROCESSUNIT_9204e2bc0b",
+        "type": "ProcessUnit",
+        "name": "CNC加工单元",
+        "props": {
+          "unit_id": "UNIT_C1_CNC",
+          "enterprise_id": "ENT_003",
+          "line_id": "LINE_C1_01"
+        },
+        "refs": [
+          {
+            "source": "field_survey",
+            "uri": "D:\\ml_pro_master\\energy_llm\\multi_enengy_agent\\data\\mock_sources\\field_survey.json",
+            "retrieved_at": "2026-01-12T02:50:50.647503Z"
+          }
+        ]
+      },
+      {
+        "id": "EQUIPMENT_561588c1fb",
+        "type": "Equipment",
+        "name": "cnc_machine:EQ_CNC_01",
+        "props": {
+          "equipment_id": "EQ_CNC_01",
+          "equipment_type": "cnc_machine",
+          "design": {}
+        },
+        "refs": [
+          {
+            "source": "field_survey",
+            "uri": "D:\\ml_pro_master\\energy_llm\\multi_enengy_agent\\data\\mock_sources\\field_survey.json",
+            "retrieved_at": "2026-01-12T02:50:50.647503Z"
+          }
+        ]
+      },
+      {
+        "id": "ENERGYDEMAND_9ce02ee414",
+        "type": "EnergyDemand",
+        "name": "ENT_003:EQ_CNC_01 energy_demand",
+        "props": {
+          "carriers": {
+            "electricity": {
+              "avg_kw": 65,
+              "peak_kw": 95
+            }
+          },
+          "time_series": {
+            "resolution": "hour",
+            "profiles": {
+              "weekday": {
+                "hourly_kw": [
+                  55,
+                  50,
+                  50,
+                  60,
+                  60,
+                  60,
+                  60,
+                  60,
+                  60,
+                  60,
+                  60,
+                  60,
+                  60,
+                  60,
+                  60,
+                  60,
+                  60,
+                  60,
+                  60,
+                  60,
+                  60,
+                  58,
+                  55,
+                  52
+                ]
+              }
+            }
+          }
+        },
+        "refs": [
+          {
+            "source": "field_survey",
+            "uri": "D:\\ml_pro_master\\energy_llm\\multi_enengy_agent\\data\\mock_sources\\field_survey.json",
+            "retrieved_at": "2026-01-12T02:50:50.647503Z"
+          }
+        ]
+      },
+      {
+        "id": "BUILDING_b5936b2a8d",
+        "type": "Building",
+        "name": "A区-1号厂房",
+        "props": {
+          "building_id": "BLDG_001",
+          "owner_enterprise_id": "ENT_001",
+          "function": "生产",
+          "roof_area_m2": 28000.0,
+          "roof_type": "metal",
+          "roof_age_year": 6,
+          "structure": {
+            "load_limit_kg_m2": 32.0
+          },
+          "solar": {
+            "shading_factor": 0.08,
+            "slope_deg": 8.0,
+            "azimuth_deg": 190.0
+          },
+          "grid": {
+            "connection_distance_m": 120.0
+          },
+          "fire_code_ok": true,
+          "geometry_wkt": "POLYGON((120.700 31.309,120.701 31.309,120.701 31.310,120.700 31.310,120.700 31.309))"
+        },
+        "refs": [
+          {
+            "source": "roof_inventory",
+            "uri": "D:\\ml_pro_master\\energy_llm\\multi_enengy_agent\\data\\mock_sources\\roof_inventory.csv",
+            "retrieved_at": "2026-01-12T02:50:50.647503Z"
+          }
+        ]
+      },
+      {
+        "id": "BUILDING_1b945b8ade",
+        "type": "Building",
+        "name": "A区-2号仓库",
+        "props": {
+          "building_id": "BLDG_002",
+          "owner_enterprise_id": "ENT_001",
+          "function": "仓储",
+          "roof_area_m2": 16000.0,
+          "roof_type": "concrete",
+          "roof_age_year": 12,
+          "structure": {
+            "load_limit_kg_m2": 25.0
+          },
+          "solar": {
+            "shading_factor": 0.12,
+            "slope_deg": 2.0,
+            "azimuth_deg": 175.0
+          },
+          "grid": {
+            "connection_distance_m": 80.0
+          },
+          "fire_code_ok": true,
+          "geometry_wkt": "POLYGON((120.702 31.309,120.703 31.309,120.703 31.310,120.702 31.310,120.702 31.309))"
+        },
+        "refs": [
+          {
+            "source": "roof_inventory",
+            "uri": "D:\\ml_pro_master\\energy_llm\\multi_enengy_agent\\data\\mock_sources\\roof_inventory.csv",
+            "retrieved_at": "2026-01-12T02:50:50.647503Z"
+          }
+        ]
+      },
+      {
+        "id": "BUILDING_81c4f74ad3",
+        "type": "Building",
+        "name": "B区-烧结车间",
+        "props": {
+          "building_id": "BLDG_101",
+          "owner_enterprise_id": "ENT_002",
+          "function": "生产",
+          "roof_area_m2": 34000.0,
+          "roof_type": "metal",
+          "roof_age_year": 4,
+          "structure": {
+            "load_limit_kg_m2": 30.0
+          },
+          "solar": {
+            "shading_factor": 0.05,
+            "slope_deg": 6.0,
+            "azimuth_deg": 200.0
+          },
+          "grid": {
+            "connection_distance_m": 160.0
+          },
+          "fire_code_ok": false,
+          "geometry_wkt": "POLYGON((120.706 31.312,120.707 31.312,120.707 31.313,120.706 31.313,120.706 31.312))"
+        },
+        "refs": [
+          {
+            "source": "roof_inventory",
+            "uri": "D:\\ml_pro_master\\energy_llm\\multi_enengy_agent\\data\\mock_sources\\roof_inventory.csv",
+            "retrieved_at": "2026-01-12T02:50:50.647503Z"
+          }
+        ]
+      },
+      {
+        "id": "BUILDING_ad361fe9b6",
+        "type": "Building",
+        "name": "C区-机加车间",
+        "props": {
+          "building_id": "BLDG_201",
+          "owner_enterprise_id": "ENT_003",
+          "function": "生产",
+          "roof_area_m2": 12000.0,
+          "roof_type": "metal",
+          "roof_age_year": 9,
+          "structure": {
+            "load_limit_kg_m2": 28.0
+          },
+          "solar": {
+            "shading_factor": 0.1,
+            "slope_deg": 10.0,
+            "azimuth_deg": 185.0
+          },
+          "grid": {
+            "connection_distance_m": 60.0
+          },
+          "fire_code_ok": true,
+          "geometry_wkt": "POLYGON((120.709 31.308,120.710 31.308,120.710 31.309,120.709 31.309,120.709 31.308))"
+        },
+        "refs": [
+          {
+            "source": "roof_inventory",
+            "uri": "D:\\ml_pro_master\\energy_llm\\multi_enengy_agent\\data\\mock_sources\\roof_inventory.csv",
+            "retrieved_at": "2026-01-12T02:50:50.647503Z"
+          }
+        ]
+      },
+      {
+        "id": "ENERGYBILLRECORD_9d89ec0711",
+        "type": "EnergyBillRecord",
+        "name": "ENT_001 energy 2023-01",
+        "props": {
+          "enterprise_id": "ENT_001",
+          "year": 2023,
+          "month": 1,
+          "electricity_mwh": 906.5,
+          "natural_gas_mwh": 591.07,
+          "steam_mwh": 384.2,
+          "peak_demand_kw": 650.0,
+          "power_factor_avg": 0.96
+        },
+        "refs": [
+          {
+            "source": "enterprise_energy_monthly_2023",
+            "uri": "D:\\ml_pro_master\\energy_llm\\multi_enengy_agent\\data\\mock_sources\\enterprise_energy_monthly_2023.csv",
+            "retrieved_at": "2026-01-12T02:50:50.647503Z"
+          }
+        ]
+      },
+      {
+        "id": "ENERGYBILLRECORD_3041bf6786",
+        "type": "EnergyBillRecord",
+        "name": "ENT_001 energy 2023-02",
+        "props": {
+          "enterprise_id": "ENT_001",
+          "year": 2023,
+          "month": 2,
+          "electricity_mwh": 911.4,
+          "natural_gas_mwh": 593.13,
+          "steam_mwh": 385.53,
+          "peak_demand_kw": 650.0,
+          "power_factor_avg": 0.96
+        },
+        "refs": [
+          {
+            "source": "enterprise_energy_monthly_2023",
+            "uri": "D:\\ml_pro_master\\energy_llm\\multi_enengy_agent\\data\\mock_sources\\enterprise_energy_monthly_2023.csv",
+            "retrieved_at": "2026-01-12T02:50:50.647503Z"
+          }
+        ]
+      },
+      {
+        "id": "ENERGYBILLRECORD_1daad40206",
+        "type": "EnergyBillRecord",
+        "name": "ENT_001 energy 2023-03",
+        "props": {
+          "enterprise_id": "ENT_001",
+          "year": 2023,
+          "month": 3,
+          "electricity_mwh": 916.3,
+          "natural_gas_mwh": 595.2,
+          "steam_mwh": 386.88,
+          "peak_demand_kw": 650.0,
+          "power_factor_avg": 0.96
+        },
+        "refs": [
+          {
+            "source": "enterprise_energy_monthly_2023",
+            "uri": "D:\\ml_pro_master\\energy_llm\\multi_enengy_agent\\data\\mock_sources\\enterprise_energy_monthly_2023.csv",
+            "retrieved_at": "2026-01-12T02:50:50.647503Z"
+          }
+        ]
+      },
+      {
+        "id": "ENERGYBILLRECORD_e0e4026953",
+        "type": "EnergyBillRecord",
+        "name": "ENT_001 energy 2023-04",
+        "props": {
+          "enterprise_id": "ENT_001",
+          "year": 2023,
+          "month": 4,
+          "electricity_mwh": 921.2,
+          "natural_gas_mwh": 597.27,
+          "steam_mwh": 388.23,
+          "peak_demand_kw": 650.0,
+          "power_factor_avg": 0.96
+        },
+        "refs": [
+          {
+            "source": "enterprise_energy_monthly_2023",
+            "uri": "D:\\ml_pro_master\\energy_llm\\multi_enengy_agent\\data\\mock_sources\\enterprise_energy_monthly_2023.csv",
+            "retrieved_at": "2026-01-12T02:50:50.647503Z"
+          }
+        ]
+      },
+      {
+        "id": "ENERGYBILLRECORD_6367be0f5d",
+        "type": "EnergyBillRecord",
+        "name": "ENT_001 energy 2023-05",
+        "props": {
+          "enterprise_id": "ENT_001",
+          "year": 2023,
+          "month": 5,
+          "electricity_mwh": 926.1,
+          "natural_gas_mwh": 599.33,
+          "steam_mwh": 389.56,
+          "peak_demand_kw": 650.0,
+          "power_factor_avg": 0.96
+        },
+        "refs": [
+          {
+            "source": "enterprise_energy_monthly_2023",
+            "uri": "D:\\ml_pro_master\\energy_llm\\multi_enengy_agent\\data\\mock_sources\\enterprise_energy_monthly_2023.csv",
+            "retrieved_at": "2026-01-12T02:50:50.647503Z"
+          }
+        ]
+      },
+      {
+        "id": "ENERGYBILLRECORD_0e6524f5b3",
+        "type": "EnergyBillRecord",
+        "name": "ENT_001 energy 2023-06",
+        "props": {
+          "enterprise_id": "ENT_001",
+          "year": 2023,
+          "month": 6,
+          "electricity_mwh": 931.0,
+          "natural_gas_mwh": 601.4,
+          "steam_mwh": 390.91,
+          "peak_demand_kw": 650.0,
+          "power_factor_avg": 0.96
+        },
+        "refs": [
+          {
+            "source": "enterprise_energy_monthly_2023",
+            "uri": "D:\\ml_pro_master\\energy_llm\\multi_enengy_agent\\data\\mock_sources\\enterprise_energy_monthly_2023.csv",
+            "retrieved_at": "2026-01-12T02:50:50.647503Z"
+          }
+        ]
+      },
+      {
+        "id": "ENERGYBILLRECORD_3d8d386290",
+        "type": "EnergyBillRecord",
+        "name": "ENT_001 energy 2023-07",
+        "props": {
+          "enterprise_id": "ENT_001",
+          "year": 2023,
+          "month": 7,
+          "electricity_mwh": 1076.29,
+          "natural_gas_mwh": 603.47,
+          "steam_mwh": 392.26,
+          "peak_demand_kw": 650.0,
+          "power_factor_avg": 0.96
+        },
+        "refs": [
+          {
+            "source": "enterprise_energy_monthly_2023",
+            "uri": "D:\\ml_pro_master\\energy_llm\\multi_enengy_agent\\data\\mock_sources\\enterprise_energy_monthly_2023.csv",
+            "retrieved_at": "2026-01-12T02:50:50.647503Z"
+          }
+        ]
+      },
+      {
+        "id": "ENERGYBILLRECORD_b966ed7ce8",
+        "type": "EnergyBillRecord",
+        "name": "ENT_001 energy 2023-08",
+        "props": {
+          "enterprise_id": "ENT_001",
+          "year": 2023,
+          "month": 8,
+          "electricity_mwh": 1081.92,
+          "natural_gas_mwh": 605.53,
+          "steam_mwh": 393.59,
+          "peak_demand_kw": 650.0,
+          "power_factor_avg": 0.96
+        },
+        "refs": [
+          {
+            "source": "enterprise_energy_monthly_2023",
+            "uri": "D:\\ml_pro_master\\energy_llm\\multi_enengy_agent\\data\\mock_sources\\enterprise_energy_monthly_2023.csv",
+            "retrieved_at": "2026-01-12T02:50:50.647503Z"
+          }
+        ]
+      },
+      {
+        "id": "ENERGYBILLRECORD_f899714083",
+        "type": "EnergyBillRecord",
+        "name": "ENT_001 energy 2023-09",
+        "props": {
+          "enterprise_id": "ENT_001",
+          "year": 2023,
+          "month": 9,
+          "electricity_mwh": 945.7,
+          "natural_gas_mwh": 607.6,
+          "steam_mwh": 394.94,
+          "peak_demand_kw": 650.0,
+          "power_factor_avg": 0.96
+        },
+        "refs": [
+          {
+            "source": "enterprise_energy_monthly_2023",
+            "uri": "D:\\ml_pro_master\\energy_llm\\multi_enengy_agent\\data\\mock_sources\\enterprise_energy_monthly_2023.csv",
+            "retrieved_at": "2026-01-12T02:50:50.647503Z"
+          }
+        ]
+      },
+      {
+        "id": "ENERGYBILLRECORD_7ae14a3b4e",
+        "type": "EnergyBillRecord",
+        "name": "ENT_001 energy 2023-10",
+        "props": {
+          "enterprise_id": "ENT_001",
+          "year": 2023,
+          "month": 10,
+          "electricity_mwh": 950.6,
+          "natural_gas_mwh": 609.67,
+          "steam_mwh": 396.29,
+          "peak_demand_kw": 650.0,
+          "power_factor_avg": 0.96
+        },
+        "refs": [
+          {
+            "source": "enterprise_energy_monthly_2023",
+            "uri": "D:\\ml_pro_master\\energy_llm\\multi_enengy_agent\\data\\mock_sources\\enterprise_energy_monthly_2023.csv",
+            "retrieved_at": "2026-01-12T02:50:50.647503Z"
+          }
+        ]
+      },
+      {
+        "id": "ENERGYBILLRECORD_9ca4f52a55",
+        "type": "EnergyBillRecord",
+        "name": "ENT_001 energy 2023-11",
+        "props": {
+          "enterprise_id": "ENT_001",
+          "year": 2023,
+          "month": 11,
+          "electricity_mwh": 955.5,
+          "natural_gas_mwh": 611.73,
+          "steam_mwh": 397.62,
+          "peak_demand_kw": 650.0,
+          "power_factor_avg": 0.96
+        },
+        "refs": [
+          {
+            "source": "enterprise_energy_monthly_2023",
+            "uri": "D:\\ml_pro_master\\energy_llm\\multi_enengy_agent\\data\\mock_sources\\enterprise_energy_monthly_2023.csv",
+            "retrieved_at": "2026-01-12T02:50:50.647503Z"
+          }
+        ]
+      },
+      {
+        "id": "ENERGYBILLRECORD_17214b1cd0",
+        "type": "EnergyBillRecord",
+        "name": "ENT_001 energy 2023-12",
+        "props": {
+          "enterprise_id": "ENT_001",
+          "year": 2023,
+          "month": 12,
+          "electricity_mwh": 960.4,
+          "natural_gas_mwh": 613.8,
+          "steam_mwh": 398.97,
+          "peak_demand_kw": 650.0,
+          "power_factor_avg": 0.96
+        },
+        "refs": [
+          {
+            "source": "enterprise_energy_monthly_2023",
+            "uri": "D:\\ml_pro_master\\energy_llm\\multi_enengy_agent\\data\\mock_sources\\enterprise_energy_monthly_2023.csv",
+            "retrieved_at": "2026-01-12T02:50:50.647503Z"
+          }
+        ]
+      },
+      {
+        "id": "ENERGYBILLRECORD_e2e87edc99",
+        "type": "EnergyBillRecord",
+        "name": "ENT_002 energy 2023-01",
+        "props": {
+          "enterprise_id": "ENT_002",
+          "year": 2023,
+          "month": 1,
+          "electricity_mwh": 1221.0,
+          "natural_gas_mwh": 114.4,
+          "steam_mwh": 17.16,
+          "peak_demand_kw": 1200.0,
+          "power_factor_avg": 0.92
+        },
+        "refs": [
+          {
+            "source": "enterprise_energy_monthly_2023",
+            "uri": "D:\\ml_pro_master\\energy_llm\\multi_enengy_agent\\data\\mock_sources\\enterprise_energy_monthly_2023.csv",
+            "retrieved_at": "2026-01-12T02:50:50.647503Z"
+          }
+        ]
+      },
+      {
+        "id": "ENERGYBILLRECORD_1dfd66d14b",
+        "type": "EnergyBillRecord",
+        "name": "ENT_002 energy 2023-02",
+        "props": {
+          "enterprise_id": "ENT_002",
+          "year": 2023,
+          "month": 2,
+          "electricity_mwh": 1227.6,
+          "natural_gas_mwh": 114.8,
+          "steam_mwh": 17.22,
+          "peak_demand_kw": 1200.0,
+          "power_factor_avg": 0.92
+        },
+        "refs": [
+          {
+            "source": "enterprise_energy_monthly_2023",
+            "uri": "D:\\ml_pro_master\\energy_llm\\multi_enengy_agent\\data\\mock_sources\\enterprise_energy_monthly_2023.csv",
+            "retrieved_at": "2026-01-12T02:50:50.647503Z"
+          }
+        ]
+      },
+      {
+        "id": "ENERGYBILLRECORD_d634f1968a",
+        "type": "EnergyBillRecord",
+        "name": "ENT_002 energy 2023-03",
+        "props": {
+          "enterprise_id": "ENT_002",
+          "year": 2023,
+          "month": 3,
+          "electricity_mwh": 1234.2,
+          "natural_gas_mwh": 115.2,
+          "steam_mwh": 17.28,
+          "peak_demand_kw": 1200.0,
+          "power_factor_avg": 0.92
+        },
+        "refs": [
+          {
+            "source": "enterprise_energy_monthly_2023",
+            "uri": "D:\\ml_pro_master\\energy_llm\\multi_enengy_agent\\data\\mock_sources\\enterprise_energy_monthly_2023.csv",
+            "retrieved_at": "2026-01-12T02:50:50.647503Z"
+          }
+        ]
+      },
+      {
+        "id": "ENERGYBILLRECORD_f02ec0a9e3",
+        "type": "EnergyBillRecord",
+        "name": "ENT_002 energy 2023-04",
+        "props": {
+          "enterprise_id": "ENT_002",
+          "year": 2023,
+          "month": 4,
+          "electricity_mwh": 1240.8,
+          "natural_gas_mwh": 115.6,
+          "steam_mwh": 17.34,
+          "peak_demand_kw": 1200.0,
+          "power_factor_avg": 0.92
+        },
+        "refs": [
+          {
+            "source": "enterprise_energy_monthly_2023",
+            "uri": "D:\\ml_pro_master\\energy_llm\\multi_enengy_agent\\data\\mock_sources\\enterprise_energy_monthly_2023.csv",
+            "retrieved_at": "2026-01-12T02:50:50.647503Z"
+          }
+        ]
+      },
+      {
+        "id": "ENERGYBILLRECORD_09587c75f3",
+        "type": "EnergyBillRecord",
+        "name": "ENT_002 energy 2023-05",
+        "props": {
+          "enterprise_id": "ENT_002",
+          "year": 2023,
+          "month": 5,
+          "electricity_mwh": 1247.4,
+          "natural_gas_mwh": 116.0,
+          "steam_mwh": 17.4,
+          "peak_demand_kw": 1200.0,
+          "power_factor_avg": 0.92
+        },
+        "refs": [
+          {
+            "source": "enterprise_energy_monthly_2023",
+            "uri": "D:\\ml_pro_master\\energy_llm\\multi_enengy_agent\\data\\mock_sources\\enterprise_energy_monthly_2023.csv",
+            "retrieved_at": "2026-01-12T02:50:50.647503Z"
+          }
+        ]
+      },
+      {
+        "id": "ENERGYBILLRECORD_414758fc07",
+        "type": "EnergyBillRecord",
+        "name": "ENT_002 energy 2023-06",
+        "props": {
+          "enterprise_id": "ENT_002",
+          "year": 2023,
+          "month": 6,
+          "electricity_mwh": 1254.0,
+          "natural_gas_mwh": 116.4,
+          "steam_mwh": 17.46,
+          "peak_demand_kw": 1200.0,
+          "power_factor_avg": 0.92
+        },
+        "refs": [
+          {
+            "source": "enterprise_energy_monthly_2023",
+            "uri": "D:\\ml_pro_master\\energy_llm\\multi_enengy_agent\\data\\mock_sources\\enterprise_energy_monthly_2023.csv",
+            "retrieved_at": "2026-01-12T02:50:50.647503Z"
+          }
+        ]
+      },
+      {
+        "id": "ENERGYBILLRECORD_0781af5f91",
+        "type": "EnergyBillRecord",
+        "name": "ENT_002 energy 2023-07",
+        "props": {
+          "enterprise_id": "ENT_002",
+          "year": 2023,
+          "month": 7,
+          "electricity_mwh": 1449.69,
+          "natural_gas_mwh": 116.8,
+          "steam_mwh": 17.52,
+          "peak_demand_kw": 1200.0,
+          "power_factor_avg": 0.92
+        },
+        "refs": [
+          {
+            "source": "enterprise_energy_monthly_2023",
+            "uri": "D:\\ml_pro_master\\energy_llm\\multi_enengy_agent\\data\\mock_sources\\enterprise_energy_monthly_2023.csv",
+            "retrieved_at": "2026-01-12T02:50:50.647503Z"
+          }
+        ]
+      },
+      {
+        "id": "ENERGYBILLRECORD_967e02caa9",
+        "type": "EnergyBillRecord",
+        "name": "ENT_002 energy 2023-08",
+        "props": {
+          "enterprise_id": "ENT_002",
+          "year": 2023,
+          "month": 8,
+          "electricity_mwh": 1457.28,
+          "natural_gas_mwh": 117.2,
+          "steam_mwh": 17.58,
+          "peak_demand_kw": 1200.0,
+          "power_factor_avg": 0.92
+        },
+        "refs": [
+          {
+            "source": "enterprise_energy_monthly_2023",
+            "uri": "D:\\ml_pro_master\\energy_llm\\multi_enengy_agent\\data\\mock_sources\\enterprise_energy_monthly_2023.csv",
+            "retrieved_at": "2026-01-12T02:50:50.647503Z"
+          }
+        ]
+      },
+      {
+        "id": "ENERGYBILLRECORD_e71ef1591c",
+        "type": "EnergyBillRecord",
+        "name": "ENT_002 energy 2023-09",
+        "props": {
+          "enterprise_id": "ENT_002",
+          "year": 2023,
+          "month": 9,
+          "electricity_mwh": 1273.8,
+          "natural_gas_mwh": 117.6,
+          "steam_mwh": 17.64,
+          "peak_demand_kw": 1200.0,
+          "power_factor_avg": 0.92
+        },
+        "refs": [
+          {
+            "source": "enterprise_energy_monthly_2023",
+            "uri": "D:\\ml_pro_master\\energy_llm\\multi_enengy_agent\\data\\mock_sources\\enterprise_energy_monthly_2023.csv",
+            "retrieved_at": "2026-01-12T02:50:50.647503Z"
+          }
+        ]
+      },
+      {
+        "id": "ENERGYBILLRECORD_5137fabd4e",
+        "type": "EnergyBillRecord",
+        "name": "ENT_002 energy 2023-10",
+        "props": {
+          "enterprise_id": "ENT_002",
+          "year": 2023,
+          "month": 10,
+          "electricity_mwh": 1280.4,
+          "natural_gas_mwh": 118.0,
+          "steam_mwh": 17.7,
+          "peak_demand_kw": 1200.0,
+          "power_factor_avg": 0.92
+        },
+        "refs": [
+          {
+            "source": "enterprise_energy_monthly_2023",
+            "uri": "D:\\ml_pro_master\\energy_llm\\multi_enengy_agent\\data\\mock_sources\\enterprise_energy_monthly_2023.csv",
+            "retrieved_at": "2026-01-12T02:50:50.647503Z"
+          }
+        ]
+      },
+      {
+        "id": "ENERGYBILLRECORD_8c665daf0b",
+        "type": "EnergyBillRecord",
+        "name": "ENT_002 energy 2023-11",
+        "props": {
+          "enterprise_id": "ENT_002",
+          "year": 2023,
+          "month": 11,
+          "electricity_mwh": 1287.0,
+          "natural_gas_mwh": 118.4,
+          "steam_mwh": 17.76,
+          "peak_demand_kw": 1200.0,
+          "power_factor_avg": 0.92
+        },
+        "refs": [
+          {
+            "source": "enterprise_energy_monthly_2023",
+            "uri": "D:\\ml_pro_master\\energy_llm\\multi_enengy_agent\\data\\mock_sources\\enterprise_energy_monthly_2023.csv",
+            "retrieved_at": "2026-01-12T02:50:50.647503Z"
+          }
+        ]
+      },
+      {
+        "id": "ENERGYBILLRECORD_a872d588c1",
+        "type": "EnergyBillRecord",
+        "name": "ENT_002 energy 2023-12",
+        "props": {
+          "enterprise_id": "ENT_002",
+          "year": 2023,
+          "month": 12,
+          "electricity_mwh": 1293.6,
+          "natural_gas_mwh": 118.8,
+          "steam_mwh": 17.82,
+          "peak_demand_kw": 1200.0,
+          "power_factor_avg": 0.92
+        },
+        "refs": [
+          {
+            "source": "enterprise_energy_monthly_2023",
+            "uri": "D:\\ml_pro_master\\energy_llm\\multi_enengy_agent\\data\\mock_sources\\enterprise_energy_monthly_2023.csv",
+            "retrieved_at": "2026-01-12T02:50:50.647503Z"
+          }
+        ]
+      },
+      {
+        "id": "ENERGYBILLRECORD_fdef7e67f2",
+        "type": "EnergyBillRecord",
+        "name": "ENT_003 energy 2023-01",
+        "props": {
+          "enterprise_id": "ENT_003",
+          "year": 2023,
+          "month": 1,
+          "electricity_mwh": 388.5,
+          "natural_gas_mwh": 57.2,
+          "steam_mwh": 8.58,
+          "peak_demand_kw": 650.0,
+          "power_factor_avg": 0.96
+        },
+        "refs": [
+          {
+            "source": "enterprise_energy_monthly_2023",
+            "uri": "D:\\ml_pro_master\\energy_llm\\multi_enengy_agent\\data\\mock_sources\\enterprise_energy_monthly_2023.csv",
+            "retrieved_at": "2026-01-12T02:50:50.647503Z"
+          }
+        ]
+      },
+      {
+        "id": "ENERGYBILLRECORD_2f8a64e595",
+        "type": "EnergyBillRecord",
+        "name": "ENT_003 energy 2023-02",
+        "props": {
+          "enterprise_id": "ENT_003",
+          "year": 2023,
+          "month": 2,
+          "electricity_mwh": 390.6,
+          "natural_gas_mwh": 57.4,
+          "steam_mwh": 8.61,
+          "peak_demand_kw": 650.0,
+          "power_factor_avg": 0.96
+        },
+        "refs": [
+          {
+            "source": "enterprise_energy_monthly_2023",
+            "uri": "D:\\ml_pro_master\\energy_llm\\multi_enengy_agent\\data\\mock_sources\\enterprise_energy_monthly_2023.csv",
+            "retrieved_at": "2026-01-12T02:50:50.647503Z"
+          }
+        ]
+      },
+      {
+        "id": "ENERGYBILLRECORD_92d44514d8",
+        "type": "EnergyBillRecord",
+        "name": "ENT_003 energy 2023-03",
+        "props": {
+          "enterprise_id": "ENT_003",
+          "year": 2023,
+          "month": 3,
+          "electricity_mwh": 392.7,
+          "natural_gas_mwh": 57.6,
+          "steam_mwh": 8.64,
+          "peak_demand_kw": 650.0,
+          "power_factor_avg": 0.96
+        },
+        "refs": [
+          {
+            "source": "enterprise_energy_monthly_2023",
+            "uri": "D:\\ml_pro_master\\energy_llm\\multi_enengy_agent\\data\\mock_sources\\enterprise_energy_monthly_2023.csv",
+            "retrieved_at": "2026-01-12T02:50:50.647503Z"
+          }
+        ]
+      },
+      {
+        "id": "ENERGYBILLRECORD_879a2eb6d1",
+        "type": "EnergyBillRecord",
+        "name": "ENT_003 energy 2023-04",
+        "props": {
+          "enterprise_id": "ENT_003",
+          "year": 2023,
+          "month": 4,
+          "electricity_mwh": 394.8,
+          "natural_gas_mwh": 57.8,
+          "steam_mwh": 8.67,
+          "peak_demand_kw": 650.0,
+          "power_factor_avg": 0.96
+        },
+        "refs": [
+          {
+            "source": "enterprise_energy_monthly_2023",
+            "uri": "D:\\ml_pro_master\\energy_llm\\multi_enengy_agent\\data\\mock_sources\\enterprise_energy_monthly_2023.csv",
+            "retrieved_at": "2026-01-12T02:50:50.647503Z"
+          }
+        ]
+      },
+      {
+        "id": "ENERGYBILLRECORD_d1bf791b32",
+        "type": "EnergyBillRecord",
+        "name": "ENT_003 energy 2023-05",
+        "props": {
+          "enterprise_id": "ENT_003",
+          "year": 2023,
+          "month": 5,
+          "electricity_mwh": 396.9,
+          "natural_gas_mwh": 58.0,
+          "steam_mwh": 8.7,
+          "peak_demand_kw": 650.0,
+          "power_factor_avg": 0.96
+        },
+        "refs": [
+          {
+            "source": "enterprise_energy_monthly_2023",
+            "uri": "D:\\ml_pro_master\\energy_llm\\multi_enengy_agent\\data\\mock_sources\\enterprise_energy_monthly_2023.csv",
+            "retrieved_at": "2026-01-12T02:50:50.647503Z"
+          }
+        ]
+      },
+      {
+        "id": "ENERGYBILLRECORD_b61fd80f48",
+        "type": "EnergyBillRecord",
+        "name": "ENT_003 energy 2023-06",
+        "props": {
+          "enterprise_id": "ENT_003",
+          "year": 2023,
+          "month": 6,
+          "electricity_mwh": 399.0,
+          "natural_gas_mwh": 58.2,
+          "steam_mwh": 8.73,
+          "peak_demand_kw": 650.0,
+          "power_factor_avg": 0.96
+        },
+        "refs": [
+          {
+            "source": "enterprise_energy_monthly_2023",
+            "uri": "D:\\ml_pro_master\\energy_llm\\multi_enengy_agent\\data\\mock_sources\\enterprise_energy_monthly_2023.csv",
+            "retrieved_at": "2026-01-12T02:50:50.647503Z"
+          }
+        ]
+      },
+      {
+        "id": "ENERGYBILLRECORD_aaba0a97b3",
+        "type": "EnergyBillRecord",
+        "name": "ENT_003 energy 2023-07",
+        "props": {
+          "enterprise_id": "ENT_003",
+          "year": 2023,
+          "month": 7,
+          "electricity_mwh": 461.26,
+          "natural_gas_mwh": 58.4,
+          "steam_mwh": 8.76,
+          "peak_demand_kw": 650.0,
+          "power_factor_avg": 0.96
+        },
+        "refs": [
+          {
+            "source": "enterprise_energy_monthly_2023",
+            "uri": "D:\\ml_pro_master\\energy_llm\\multi_enengy_agent\\data\\mock_sources\\enterprise_energy_monthly_2023.csv",
+            "retrieved_at": "2026-01-12T02:50:50.647503Z"
+          }
+        ]
+      },
+      {
+        "id": "ENERGYBILLRECORD_474a91f4dc",
+        "type": "EnergyBillRecord",
+        "name": "ENT_003 energy 2023-08",
+        "props": {
+          "enterprise_id": "ENT_003",
+          "year": 2023,
+          "month": 8,
+          "electricity_mwh": 463.68,
+          "natural_gas_mwh": 58.6,
+          "steam_mwh": 8.79,
+          "peak_demand_kw": 650.0,
+          "power_factor_avg": 0.96
+        },
+        "refs": [
+          {
+            "source": "enterprise_energy_monthly_2023",
+            "uri": "D:\\ml_pro_master\\energy_llm\\multi_enengy_agent\\data\\mock_sources\\enterprise_energy_monthly_2023.csv",
+            "retrieved_at": "2026-01-12T02:50:50.647503Z"
+          }
+        ]
+      },
+      {
+        "id": "ENERGYBILLRECORD_a5238a55c8",
+        "type": "EnergyBillRecord",
+        "name": "ENT_003 energy 2023-09",
+        "props": {
+          "enterprise_id": "ENT_003",
+          "year": 2023,
+          "month": 9,
+          "electricity_mwh": 405.3,
+          "natural_gas_mwh": 58.8,
+          "steam_mwh": 8.82,
+          "peak_demand_kw": 650.0,
+          "power_factor_avg": 0.96
+        },
+        "refs": [
+          {
+            "source": "enterprise_energy_monthly_2023",
+            "uri": "D:\\ml_pro_master\\energy_llm\\multi_enengy_agent\\data\\mock_sources\\enterprise_energy_monthly_2023.csv",
+            "retrieved_at": "2026-01-12T02:50:50.647503Z"
+          }
+        ]
+      },
+      {
+        "id": "ENERGYBILLRECORD_f1e08ab7d8",
+        "type": "EnergyBillRecord",
+        "name": "ENT_003 energy 2023-10",
+        "props": {
+          "enterprise_id": "ENT_003",
+          "year": 2023,
+          "month": 10,
+          "electricity_mwh": 407.4,
+          "natural_gas_mwh": 59.0,
+          "steam_mwh": 8.85,
+          "peak_demand_kw": 650.0,
+          "power_factor_avg": 0.96
+        },
+        "refs": [
+          {
+            "source": "enterprise_energy_monthly_2023",
+            "uri": "D:\\ml_pro_master\\energy_llm\\multi_enengy_agent\\data\\mock_sources\\enterprise_energy_monthly_2023.csv",
+            "retrieved_at": "2026-01-12T02:50:50.647503Z"
+          }
+        ]
+      },
+      {
+        "id": "ENERGYBILLRECORD_4398ce663f",
+        "type": "EnergyBillRecord",
+        "name": "ENT_003 energy 2023-11",
+        "props": {
+          "enterprise_id": "ENT_003",
+          "year": 2023,
+          "month": 11,
+          "electricity_mwh": 409.5,
+          "natural_gas_mwh": 59.2,
+          "steam_mwh": 8.88,
+          "peak_demand_kw": 650.0,
+          "power_factor_avg": 0.96
+        },
+        "refs": [
+          {
+            "source": "enterprise_energy_monthly_2023",
+            "uri": "D:\\ml_pro_master\\energy_llm\\multi_enengy_agent\\data\\mock_sources\\enterprise_energy_monthly_2023.csv",
+            "retrieved_at": "2026-01-12T02:50:50.647503Z"
+          }
+        ]
+      },
+      {
+        "id": "ENERGYBILLRECORD_f9b3784ffa",
+        "type": "EnergyBillRecord",
+        "name": "ENT_003 energy 2023-12",
+        "props": {
+          "enterprise_id": "ENT_003",
+          "year": 2023,
+          "month": 12,
+          "electricity_mwh": 411.6,
+          "natural_gas_mwh": 59.4,
+          "steam_mwh": 8.91,
+          "peak_demand_kw": 650.0,
+          "power_factor_avg": 0.96
+        },
+        "refs": [
+          {
+            "source": "enterprise_energy_monthly_2023",
+            "uri": "D:\\ml_pro_master\\energy_llm\\multi_enengy_agent\\data\\mock_sources\\enterprise_energy_monthly_2023.csv",
+            "retrieved_at": "2026-01-12T02:50:50.647503Z"
+          }
+        ]
+      },
+      {
+        "id": "POLICYDOC_3f7102045f",
+        "type": "PolicyDoc",
+        "name": "苏州市零碳园区试点支持政策（虚拟）",
+        "props": {
+          "doc_id": "DOC_SUZ_2025_ZCIP_01",
+          "title": "苏州市零碳园区试点支持政策（虚拟）",
+          "issuer": "苏州市发改委（虚拟）",
+          "effective_date": "2025-01-01",
+          "uri": "internal://policy/DOC_SUZ_2025_ZCIP_01"
+        },
+        "refs": [
+          {
+            "source": "policy_report_extract",
+            "uri": "D:\\ml_pro_master\\energy_llm\\multi_enengy_agent\\data\\mock_sources\\policy_report_extract.json",
+            "retrieved_at": "2026-01-12T02:50:50.647503Z"
+          },
+          {
+            "source": "policy_report_extract",
+            "uri": "D:\\ml_pro_master\\energy_llm\\multi_enengy_agent\\data\\mock_sources\\policy_report_extract.json",
+            "retrieved_at": "2026-01-12T02:50:50.647503Z"
+          },
+          {
+            "source": "policy_report_extract",
+            "uri": "D:\\ml_pro_master\\energy_llm\\multi_enengy_agent\\data\\mock_sources\\policy_report_extract.json",
+            "retrieved_at": "2026-01-12T02:50:50.647503Z"
+          }
+        ]
+      },
+      {
+        "id": "POLICYDOC_a2c0cf3013",
+        "type": "PolicyDoc",
+        "name": "工业节能与绿色改造奖励办法（虚拟）",
+        "props": {
+          "doc_id": "DOC_SUZ_2024_EE_02",
+          "title": "工业节能与绿色改造奖励办法（虚拟）",
+          "issuer": "苏州市工信局（虚拟）",
+          "effective_date": "2024-06-01",
+          "uri": "internal://policy/DOC_SUZ_2024_EE_02"
+        },
+        "refs": [
+          {
+            "source": "policy_report_extract",
+            "uri": "D:\\ml_pro_master\\energy_llm\\multi_enengy_agent\\data\\mock_sources\\policy_report_extract.json",
+            "retrieved_at": "2026-01-12T02:50:50.647503Z"
+          },
+          {
+            "source": "policy_report_extract",
+            "uri": "D:\\ml_pro_master\\energy_llm\\multi_enengy_agent\\data\\mock_sources\\policy_report_extract.json",
+            "retrieved_at": "2026-01-12T02:50:50.647503Z"
+          }
+        ]
+      },
+      {
+        "id": "POLICYDOC_3ea26790d5",
+        "type": "PolicyDoc",
+        "name": "江苏省用户侧储能与削峰响应支持细则（虚拟）",
+        "props": {
+          "doc_id": "DOC_JS_2025_POWER_03",
+          "title": "江苏省用户侧储能与削峰响应支持细则（虚拟）",
+          "issuer": "江苏省能源局（虚拟）",
+          "effective_date": "2025-03-01",
+          "uri": "internal://policy/DOC_JS_2025_POWER_03"
+        },
+        "refs": [
+          {
+            "source": "policy_report_extract",
+            "uri": "D:\\ml_pro_master\\energy_llm\\multi_enengy_agent\\data\\mock_sources\\policy_report_extract.json",
+            "retrieved_at": "2026-01-12T02:50:50.647503Z"
+          },
+          {
+            "source": "policy_report_extract",
+            "uri": "D:\\ml_pro_master\\energy_llm\\multi_enengy_agent\\data\\mock_sources\\policy_report_extract.json",
+            "retrieved_at": "2026-01-12T02:50:50.647503Z"
+          }
+        ]
+      },
+      {
+        "id": "POLICYCLAUSE_d69def7c33",
+        "type": "PolicyClause",
+        "name": "DOC_SUZ_2025_ZCIP_01_C01",
+        "props": {
+          "clause_id": "DOC_SUZ_2025_ZCIP_01_C01",
+          "doc_id": "DOC_SUZ_2025_ZCIP_01",
+          "citation_no": "[ZCIP-1]",
+          "effective_date": "2025-01-01",
+          "excerpt": "对园区屋顶光伏项目按投资额给予10%一次性补贴，单园区最高不超过200万元。",
+          "admin_codes": [
+            "320500"
+          ],
+          "industry_codes": [],
+          "measure_ids": [
+            "PV_ROOF"
+          ],
+          "analysis_points": [
+            "PV_SUBSIDY",
+            "GRID_CONNECTION_FAST_TRACK"
+          ],
+          "incentives": {
+            "capex_subsidy_pct": 0.1,
+            "capex_subsidy_cap_million_cny": 2.0
+          },
+          "eligibility": {
+            "min_roof_area_m2": 5000,
+            "requirement": [
+              "并网验收",
+              "消防合规"
+            ]
+          }
+        },
+        "refs": [
+          {
+            "source": "policy_report_extract",
+            "uri": "D:\\ml_pro_master\\energy_llm\\multi_enengy_agent\\data\\mock_sources\\policy_report_extract.json",
+            "retrieved_at": "2026-01-12T02:50:50.647503Z"
+          }
+        ]
+      },
+      {
+        "id": "MEASURE_950f5e2ce4",
+        "type": "Measure",
+        "name": "PV_ROOF",
+        "props": {
+          "measure_id": "PV_ROOF"
+        },
+        "refs": [
+          {
+            "source": "policy_report_extract",
+            "uri": "D:\\ml_pro_master\\energy_llm\\multi_enengy_agent\\data\\mock_sources\\policy_report_extract.json",
+            "retrieved_at": "2026-01-12T02:50:50.647503Z"
+          }
+        ]
+      },
+      {
+        "id": "POLICYCLAUSE_273f531a3e",
+        "type": "PolicyClause",
+        "name": "DOC_SUZ_2025_ZCIP_01_C02",
+        "props": {
+          "clause_id": "DOC_SUZ_2025_ZCIP_01_C02",
+          "doc_id": "DOC_SUZ_2025_ZCIP_01",
+          "citation_no": "[ZCIP-2]",
+          "effective_date": "2025-01-01",
+          "excerpt": "对工业余热回收与热泵耦合改造按投资额给予15%补贴，单项目最高不超过300万元。",
+          "admin_codes": [
+            "320500"
+          ],
+          "industry_codes": [
+            "C26",
+            "C30"
+          ],
+          "measure_ids": [
+            "WASTE_HEAT"
+          ],
+          "analysis_points": [
+            "WASTE_HEAT_SUPPORT",
+            "HEAT_PUMP_COUPLING"
+          ],
+          "incentives": {
+            "capex_subsidy_pct": 0.15,
+            "capex_subsidy_cap_million_cny": 3.0
+          },
+          "eligibility": {
+            "min_available_waste_heat_mw": 0.8,
+            "temperature_c_min": 35
+          }
+        },
+        "refs": [
+          {
+            "source": "policy_report_extract",
+            "uri": "D:\\ml_pro_master\\energy_llm\\multi_enengy_agent\\data\\mock_sources\\policy_report_extract.json",
+            "retrieved_at": "2026-01-12T02:50:50.647503Z"
+          }
+        ]
+      },
+      {
+        "id": "MEASURE_3aaee474e2",
+        "type": "Measure",
+        "name": "WASTE_HEAT",
+        "props": {
+          "measure_id": "WASTE_HEAT"
+        },
+        "refs": [
+          {
+            "source": "policy_report_extract",
+            "uri": "D:\\ml_pro_master\\energy_llm\\multi_enengy_agent\\data\\mock_sources\\policy_report_extract.json",
+            "retrieved_at": "2026-01-12T02:50:50.647503Z"
+          }
+        ]
+      },
+      {
+        "id": "POLICYCLAUSE_728655dcc0",
+        "type": "PolicyClause",
+        "name": "DOC_SUZ_2024_EE_02_C01",
+        "props": {
+          "clause_id": "DOC_SUZ_2024_EE_02_C01",
+          "doc_id": "DOC_SUZ_2024_EE_02",
+          "citation_no": "[EE-1]",
+          "effective_date": "2024-06-01",
+          "excerpt": "对高效电机与变频改造项目按投资额给予8%补贴，单项目最高不超过120万元。",
+          "admin_codes": [
+            "320500"
+          ],
+          "industry_codes": [
+            "C26",
+            "C30",
+            "C34"
+          ],
+          "measure_ids": [
+            "EE_MOTOR"
+          ],
+          "analysis_points": [
+            "MOTOR_EFFICIENCY",
+            "VFD_RETROFIT"
+          ],
+          "incentives": {
+            "capex_subsidy_pct": 0.08,
+            "capex_subsidy_cap_million_cny": 1.2
+          },
+          "eligibility": {
+            "min_motor_count": 20,
+            "min_operating_hours_per_year": 3000
+          }
+        },
+        "refs": [
+          {
+            "source": "policy_report_extract",
+            "uri": "D:\\ml_pro_master\\energy_llm\\multi_enengy_agent\\data\\mock_sources\\policy_report_extract.json",
+            "retrieved_at": "2026-01-12T02:50:50.647503Z"
+          }
+        ]
+      },
+      {
+        "id": "MEASURE_2deb30a286",
+        "type": "Measure",
+        "name": "EE_MOTOR",
+        "props": {
+          "measure_id": "EE_MOTOR"
+        },
+        "refs": [
+          {
+            "source": "policy_report_extract",
+            "uri": "D:\\ml_pro_master\\energy_llm\\multi_enengy_agent\\data\\mock_sources\\policy_report_extract.json",
+            "retrieved_at": "2026-01-12T02:50:50.647503Z"
+          }
+        ]
+      },
+      {
+        "id": "POLICYCLAUSE_6a4b56d3fd",
+        "type": "PolicyClause",
+        "name": "DOC_JS_2025_POWER_03_C01",
+        "props": {
+          "clause_id": "DOC_JS_2025_POWER_03_C01",
+          "doc_id": "DOC_JS_2025_POWER_03",
+          "citation_no": "[BESS-1]",
+          "effective_date": "2025-03-01",
+          "excerpt": "对用户侧储能项目按投资额给予12%补贴，单项目最高不超过500万元；参与削峰响应可叠加运营补贴。",
+          "admin_codes": [
+            "320000"
+          ],
+          "industry_codes": [],
+          "measure_ids": [
+            "BESS_TOU"
+          ],
+          "analysis_points": [
+            "BESS_CAPEX",
+            "DEMAND_RESPONSE"
+          ],
+          "incentives": {
+            "capex_subsidy_pct": 0.12,
+            "capex_subsidy_cap_million_cny": 5.0
+          },
+          "eligibility": {
+            "min_power_mw": 1.0,
+            "min_duration_h": 2,
+            "grid_agreement": "required"
+          }
+        },
+        "refs": [
+          {
+            "source": "policy_report_extract",
+            "uri": "D:\\ml_pro_master\\energy_llm\\multi_enengy_agent\\data\\mock_sources\\policy_report_extract.json",
+            "retrieved_at": "2026-01-12T02:50:50.647503Z"
+          }
+        ]
+      },
+      {
+        "id": "ADMINREGION_c0ba6bfc34",
+        "type": "AdminRegion",
+        "name": "320000",
+        "props": {
+          "admin_code": "320000"
+        },
+        "refs": [
+          {
+            "source": "policy_report_extract",
+            "uri": "D:\\ml_pro_master\\energy_llm\\multi_enengy_agent\\data\\mock_sources\\policy_report_extract.json",
+            "retrieved_at": "2026-01-12T02:50:50.647503Z"
+          }
+        ]
+      },
+      {
+        "id": "MEASURE_2e6055421b",
+        "type": "Measure",
+        "name": "BESS_TOU",
+        "props": {
+          "measure_id": "BESS_TOU"
+        },
+        "refs": [
+          {
+            "source": "policy_report_extract",
+            "uri": "D:\\ml_pro_master\\energy_llm\\multi_enengy_agent\\data\\mock_sources\\policy_report_extract.json",
+            "retrieved_at": "2026-01-12T02:50:50.647503Z"
+          }
+        ]
+      }
+    ],
+    "edges": [
+      {
+        "id": "LOCATEDIN_6ab362bbcc",
+        "source": "PARK_da18f4314b",
+        "target": "ADMINREGION_c2787b0870",
+        "type": "LOCATED_IN",
+        "props": {
+          "scope": "admin_code"
+        },
+        "refs": [
+          {
+            "source": "field_survey",
+            "uri": "D:\\ml_pro_master\\energy_llm\\multi_enengy_agent\\data\\mock_sources\\field_survey.json",
+            "retrieved_at": "2026-01-12T02:50:50.647503Z"
+          }
+        ]
+      },
+      {
+        "id": "LOCATEDIN_a3c65e964b",
+        "source": "PARK_da18f4314b",
+        "target": "ADMINREGION_3a21184a5d",
+        "type": "LOCATED_IN",
+        "props": {
+          "scope": "admin_code"
+        },
+        "refs": [
+          {
+            "source": "field_survey",
+            "uri": "D:\\ml_pro_master\\energy_llm\\multi_enengy_agent\\data\\mock_sources\\field_survey.json",
+            "retrieved_at": "2026-01-12T02:50:50.647503Z"
+          }
+        ]
+      },
+      {
+        "id": "GOVERNS_6ac2be78b3",
+        "source": "ORGANIZATION_5fa961c1ba",
+        "target": "PARK_da18f4314b",
+        "type": "GOVERNS",
+        "props": {},
+        "refs": [
+          {
+            "source": "field_survey",
+            "uri": "D:\\ml_pro_master\\energy_llm\\multi_enengy_agent\\data\\mock_sources\\field_survey.json",
+            "retrieved_at": "2026-01-12T02:50:50.647503Z"
+          }
+        ]
+      },
+      {
+        "id": "HASREQUIREMENT_b6b346abbf",
+        "source": "ORGANIZATION_5fa961c1ba",
+        "target": "REQUIREMENT_799a088fda",
+        "type": "HAS_REQUIREMENT",
+        "props": {},
+        "refs": [
+          {
+            "source": "field_survey",
+            "uri": "D:\\ml_pro_master\\energy_llm\\multi_enengy_agent\\data\\mock_sources\\field_survey.json",
+            "retrieved_at": "2026-01-12T02:50:50.647503Z"
+          }
+        ]
+      },
+      {
+        "id": "OPERATES_ccaae5aa99",
+        "source": "ORGANIZATION_d3d1304f5c",
+        "target": "PARK_da18f4314b",
+        "type": "OPERATES",
+        "props": {},
+        "refs": [
+          {
+            "source": "field_survey",
+            "uri": "D:\\ml_pro_master\\energy_llm\\multi_enengy_agent\\data\\mock_sources\\field_survey.json",
+            "retrieved_at": "2026-01-12T02:50:50.647503Z"
+          }
+        ]
+      },
+      {
+        "id": "INPORTFOLIO_62b158421e",
+        "source": "INDUSTRY_529275d5f6",
+        "target": "PARK_da18f4314b",
+        "type": "IN_PORTFOLIO",
+        "props": {
+          "meaning": "park_has_industry_reference"
+        },
+        "refs": [
+          {
+            "source": "industry_energy_scale",
+            "uri": "D:\\ml_pro_master\\energy_llm\\multi_enengy_agent\\data\\mock_sources\\industry_energy_scale.csv",
+            "retrieved_at": "2026-01-12T02:50:50.647503Z"
+          }
+        ]
+      },
+      {
+        "id": "INPORTFOLIO_c5919d5197",
+        "source": "INDUSTRY_99351a6718",
+        "target": "PARK_da18f4314b",
+        "type": "IN_PORTFOLIO",
+        "props": {
+          "meaning": "park_has_industry_reference"
+        },
+        "refs": [
+          {
+            "source": "industry_energy_scale",
+            "uri": "D:\\ml_pro_master\\energy_llm\\multi_enengy_agent\\data\\mock_sources\\industry_energy_scale.csv",
+            "retrieved_at": "2026-01-12T02:50:50.647503Z"
+          }
+        ]
+      },
+      {
+        "id": "INPORTFOLIO_98b9c951a4",
+        "source": "INDUSTRY_78479a144b",
+        "target": "PARK_da18f4314b",
+        "type": "IN_PORTFOLIO",
+        "props": {
+          "meaning": "park_has_industry_reference"
+        },
+        "refs": [
+          {
+            "source": "industry_energy_scale",
+            "uri": "D:\\ml_pro_master\\energy_llm\\multi_enengy_agent\\data\\mock_sources\\industry_energy_scale.csv",
+            "retrieved_at": "2026-01-12T02:50:50.647503Z"
+          }
+        ]
+      },
+      {
+        "id": "LOCATEDIN_bffc7670e1",
+        "source": "ENTERPRISE_e1c22b48fc",
+        "target": "PARK_da18f4314b",
+        "type": "LOCATED_IN",
+        "props": {},
+        "refs": [
+          {
+            "source": "enterprise_registry",
+            "uri": "D:\\ml_pro_master\\energy_llm\\multi_enengy_agent\\data\\mock_sources\\enterprise_registry.csv",
+            "retrieved_at": "2026-01-12T02:50:50.647503Z"
+          }
+        ]
+      },
+      {
+        "id": "BELONGSTO_c7ee9ea671",
+        "source": "ENTERPRISE_e1c22b48fc",
+        "target": "INDUSTRY_529275d5f6",
+        "type": "BELONGS_TO",
+        "props": {},
+        "refs": [
+          {
+            "source": "enterprise_registry",
+            "uri": "D:\\ml_pro_master\\energy_llm\\multi_enengy_agent\\data\\mock_sources\\enterprise_registry.csv",
+            "retrieved_at": "2026-01-12T02:50:50.647503Z"
+          }
+        ]
+      },
+      {
+        "id": "LOCATEDIN_2bb20a8925",
+        "source": "ENTERPRISE_fd9e1f3aa7",
+        "target": "PARK_da18f4314b",
+        "type": "LOCATED_IN",
+        "props": {},
+        "refs": [
+          {
+            "source": "enterprise_registry",
+            "uri": "D:\\ml_pro_master\\energy_llm\\multi_enengy_agent\\data\\mock_sources\\enterprise_registry.csv",
+            "retrieved_at": "2026-01-12T02:50:50.647503Z"
+          }
+        ]
+      },
+      {
+        "id": "BELONGSTO_af8e5372d9",
+        "source": "ENTERPRISE_fd9e1f3aa7",
+        "target": "INDUSTRY_99351a6718",
+        "type": "BELONGS_TO",
+        "props": {},
+        "refs": [
+          {
+            "source": "enterprise_registry",
+            "uri": "D:\\ml_pro_master\\energy_llm\\multi_enengy_agent\\data\\mock_sources\\enterprise_registry.csv",
+            "retrieved_at": "2026-01-12T02:50:50.647503Z"
+          }
+        ]
+      },
+      {
+        "id": "LOCATEDIN_b6ba7bb7e4",
+        "source": "ENTERPRISE_000dc9fc4e",
+        "target": "PARK_da18f4314b",
+        "type": "LOCATED_IN",
+        "props": {},
+        "refs": [
+          {
+            "source": "enterprise_registry",
+            "uri": "D:\\ml_pro_master\\energy_llm\\multi_enengy_agent\\data\\mock_sources\\enterprise_registry.csv",
+            "retrieved_at": "2026-01-12T02:50:50.647503Z"
+          }
+        ]
+      },
+      {
+        "id": "BELONGSTO_3ffcb89b4a",
+        "source": "ENTERPRISE_000dc9fc4e",
+        "target": "INDUSTRY_78479a144b",
+        "type": "BELONGS_TO",
+        "props": {},
+        "refs": [
+          {
+            "source": "enterprise_registry",
+            "uri": "D:\\ml_pro_master\\energy_llm\\multi_enengy_agent\\data\\mock_sources\\enterprise_registry.csv",
+            "retrieved_at": "2026-01-12T02:50:50.647503Z"
+          }
+        ]
+      },
+      {
+        "id": "LOCATEDIN_20bb81e4b6",
+        "source": "ENTERPRISE_e1c22b48fc",
+        "target": "PARK_da18f4314b",
+        "type": "LOCATED_IN",
+        "props": {},
+        "refs": [
+          {
+            "source": "field_survey",
+            "uri": "D:\\ml_pro_master\\energy_llm\\multi_enengy_agent\\data\\mock_sources\\field_survey.json",
+            "retrieved_at": "2026-01-12T02:50:50.647503Z"
+          }
+        ]
+      },
+      {
+        "id": "HASREQUIREMENT_6df22f5c39",
+        "source": "ENTERPRISE_e1c22b48fc",
+        "target": "REQUIREMENT_30d470bb96",
+        "type": "HAS_REQUIREMENT",
+        "props": {},
+        "refs": [
+          {
+            "source": "field_survey",
+            "uri": "D:\\ml_pro_master\\energy_llm\\multi_enengy_agent\\data\\mock_sources\\field_survey.json",
+            "retrieved_at": "2026-01-12T02:50:50.647503Z"
+          }
+        ]
+      },
+      {
+        "id": "HASPLANT_31a546964f",
+        "source": "ENTERPRISE_e1c22b48fc",
+        "target": "PLANT_ecd7c962e0",
+        "type": "HAS_PLANT",
+        "props": {},
+        "refs": [
+          {
+            "source": "field_survey",
+            "uri": "D:\\ml_pro_master\\energy_llm\\multi_enengy_agent\\data\\mock_sources\\field_survey.json",
+            "retrieved_at": "2026-01-12T02:50:50.647503Z"
+          }
+        ]
+      },
+      {
+        "id": "HASWORKSHOP_2cac615d2b",
+        "source": "PLANT_ecd7c962e0",
+        "target": "WORKSHOP_0da2c37013",
+        "type": "HAS_WORKSHOP",
+        "props": {},
+        "refs": [
+          {
+            "source": "field_survey",
+            "uri": "D:\\ml_pro_master\\energy_llm\\multi_enengy_agent\\data\\mock_sources\\field_survey.json",
+            "retrieved_at": "2026-01-12T02:50:50.647503Z"
+          }
+        ]
+      },
+      {
+        "id": "HASLINE_9b4c8c58b6",
+        "source": "WORKSHOP_0da2c37013",
+        "target": "PROCESSLINE_1dcf5839b0",
+        "type": "HAS_LINE",
+        "props": {},
+        "refs": [
+          {
+            "source": "field_survey",
+            "uri": "D:\\ml_pro_master\\energy_llm\\multi_enengy_agent\\data\\mock_sources\\field_survey.json",
+            "retrieved_at": "2026-01-12T02:50:50.647503Z"
+          }
+        ]
+      },
+      {
+        "id": "HASUNIT_23d3f56ceb",
+        "source": "PROCESSLINE_1dcf5839b0",
+        "target": "PROCESSUNIT_117ea241a7",
+        "type": "HAS_UNIT",
+        "props": {},
+        "refs": [
+          {
+            "source": "field_survey",
+            "uri": "D:\\ml_pro_master\\energy_llm\\multi_enengy_agent\\data\\mock_sources\\field_survey.json",
+            "retrieved_at": "2026-01-12T02:50:50.647503Z"
+          }
+        ]
+      },
+      {
+        "id": "HASEQUIPMENT_db9285ae96",
+        "source": "PROCESSUNIT_117ea241a7",
+        "target": "EQUIPMENT_e3e29c2a75",
+        "type": "HAS_EQUIPMENT",
+        "props": {},
+        "refs": [
+          {
+            "source": "field_survey",
+            "uri": "D:\\ml_pro_master\\energy_llm\\multi_enengy_agent\\data\\mock_sources\\field_survey.json",
+            "retrieved_at": "2026-01-12T02:50:50.647503Z"
+          }
+        ]
+      },
+      {
+        "id": "CONSUMES_22e7b9353e",
+        "source": "EQUIPMENT_e3e29c2a75",
+        "target": "ENERGYDEMAND_15c309edd3",
+        "type": "CONSUMES",
+        "props": {},
+        "refs": [
+          {
+            "source": "field_survey",
+            "uri": "D:\\ml_pro_master\\energy_llm\\multi_enengy_agent\\data\\mock_sources\\field_survey.json",
+            "retrieved_at": "2026-01-12T02:50:50.647503Z"
+          }
+        ]
+      },
+      {
+        "id": "EMITSWASTEHEAT_da6194e1da",
+        "source": "EQUIPMENT_e3e29c2a75",
+        "target": "WASTEHEATSTREAM_bd017811ee",
+        "type": "EMITS_WASTE_HEAT",
+        "props": {},
+        "refs": [
+          {
+            "source": "field_survey",
+            "uri": "D:\\ml_pro_master\\energy_llm\\multi_enengy_agent\\data\\mock_sources\\field_survey.json",
+            "retrieved_at": "2026-01-12T02:50:50.647503Z"
+          }
+        ]
+      },
+      {
+        "id": "CANSUPPLY_98a0e1e0c4",
+        "source": "WASTEHEATSTREAM_bd017811ee",
+        "target": "ENTERPRISE_000dc9fc4e",
+        "type": "CAN_SUPPLY",
+        "props": {
+          "use": "清洗热水",
+          "temp_c": 50,
+          "est_mw": 0.4
+        },
+        "refs": [
+          {
+            "source": "field_survey",
+            "uri": "D:\\ml_pro_master\\energy_llm\\multi_enengy_agent\\data\\mock_sources\\field_survey.json",
+            "retrieved_at": "2026-01-12T02:50:50.647503Z"
+          }
+        ]
+      },
+      {
+        "id": "LOCATEDIN_8edcbb4bad",
+        "source": "ENTERPRISE_fd9e1f3aa7",
+        "target": "PARK_da18f4314b",
+        "type": "LOCATED_IN",
+        "props": {},
+        "refs": [
+          {
+            "source": "field_survey",
+            "uri": "D:\\ml_pro_master\\energy_llm\\multi_enengy_agent\\data\\mock_sources\\field_survey.json",
+            "retrieved_at": "2026-01-12T02:50:50.647503Z"
+          }
+        ]
+      },
+      {
+        "id": "HASREQUIREMENT_dbb09c7d96",
+        "source": "ENTERPRISE_fd9e1f3aa7",
+        "target": "REQUIREMENT_7e9b059ed6",
+        "type": "HAS_REQUIREMENT",
+        "props": {},
+        "refs": [
+          {
+            "source": "field_survey",
+            "uri": "D:\\ml_pro_master\\energy_llm\\multi_enengy_agent\\data\\mock_sources\\field_survey.json",
+            "retrieved_at": "2026-01-12T02:50:50.647503Z"
+          }
+        ]
+      },
+      {
+        "id": "HASPLANT_e2bfda99df",
+        "source": "ENTERPRISE_fd9e1f3aa7",
+        "target": "PLANT_24656e0ab6",
+        "type": "HAS_PLANT",
+        "props": {},
+        "refs": [
+          {
+            "source": "field_survey",
+            "uri": "D:\\ml_pro_master\\energy_llm\\multi_enengy_agent\\data\\mock_sources\\field_survey.json",
+            "retrieved_at": "2026-01-12T02:50:50.647503Z"
+          }
+        ]
+      },
+      {
+        "id": "HASWORKSHOP_ce29de97aa",
+        "source": "PLANT_24656e0ab6",
+        "target": "WORKSHOP_6135308e1e",
+        "type": "HAS_WORKSHOP",
+        "props": {},
+        "refs": [
+          {
+            "source": "field_survey",
+            "uri": "D:\\ml_pro_master\\energy_llm\\multi_enengy_agent\\data\\mock_sources\\field_survey.json",
+            "retrieved_at": "2026-01-12T02:50:50.647503Z"
+          }
+        ]
+      },
+      {
+        "id": "HASLINE_32a6055343",
+        "source": "WORKSHOP_6135308e1e",
+        "target": "PROCESSLINE_3f45742517",
+        "type": "HAS_LINE",
+        "props": {},
+        "refs": [
+          {
+            "source": "field_survey",
+            "uri": "D:\\ml_pro_master\\energy_llm\\multi_enengy_agent\\data\\mock_sources\\field_survey.json",
+            "retrieved_at": "2026-01-12T02:50:50.647503Z"
+          }
+        ]
+      },
+      {
+        "id": "HASUNIT_9bbe083329",
+        "source": "PROCESSLINE_3f45742517",
+        "target": "PROCESSUNIT_735b7c7921",
+        "type": "HAS_UNIT",
+        "props": {},
+        "refs": [
+          {
+            "source": "field_survey",
+            "uri": "D:\\ml_pro_master\\energy_llm\\multi_enengy_agent\\data\\mock_sources\\field_survey.json",
+            "retrieved_at": "2026-01-12T02:50:50.647503Z"
+          }
+        ]
+      },
+      {
+        "id": "HASEQUIPMENT_e3068b0482",
+        "source": "PROCESSUNIT_735b7c7921",
+        "target": "EQUIPMENT_35e7bea5fb",
+        "type": "HAS_EQUIPMENT",
+        "props": {},
+        "refs": [
+          {
+            "source": "field_survey",
+            "uri": "D:\\ml_pro_master\\energy_llm\\multi_enengy_agent\\data\\mock_sources\\field_survey.json",
+            "retrieved_at": "2026-01-12T02:50:50.647503Z"
+          }
+        ]
+      },
+      {
+        "id": "CONSUMES_2b66d1b5ba",
+        "source": "EQUIPMENT_35e7bea5fb",
+        "target": "ENERGYDEMAND_70f3b9ffcc",
+        "type": "CONSUMES",
+        "props": {},
+        "refs": [
+          {
+            "source": "field_survey",
+            "uri": "D:\\ml_pro_master\\energy_llm\\multi_enengy_agent\\data\\mock_sources\\field_survey.json",
+            "retrieved_at": "2026-01-12T02:50:50.647503Z"
+          }
+        ]
+      },
+      {
+        "id": "EMITSWASTEHEAT_1a49a20f3f",
+        "source": "EQUIPMENT_35e7bea5fb",
+        "target": "WASTEHEATSTREAM_050256f0f0",
+        "type": "EMITS_WASTE_HEAT",
+        "props": {},
+        "refs": [
+          {
+            "source": "field_survey",
+            "uri": "D:\\ml_pro_master\\energy_llm\\multi_enengy_agent\\data\\mock_sources\\field_survey.json",
+            "retrieved_at": "2026-01-12T02:50:50.647503Z"
+          }
+        ]
+      },
+      {
+        "id": "CANSUPPLY_569ca46a75",
+        "source": "WASTEHEATSTREAM_050256f0f0",
+        "target": "ENERGYNETWORK_013faed902",
+        "type": "CAN_SUPPLY",
+        "props": {
+          "use": "区域供热",
+          "temp_c": 80
+        },
+        "refs": [
+          {
+            "source": "field_survey",
+            "uri": "D:\\ml_pro_master\\energy_llm\\multi_enengy_agent\\data\\mock_sources\\field_survey.json",
+            "retrieved_at": "2026-01-12T02:50:50.647503Z"
+          }
+        ]
+      },
+      {
+        "id": "LOCATEDIN_25ee8985ac",
+        "source": "ENTERPRISE_000dc9fc4e",
+        "target": "PARK_da18f4314b",
+        "type": "LOCATED_IN",
+        "props": {},
+        "refs": [
+          {
+            "source": "field_survey",
+            "uri": "D:\\ml_pro_master\\energy_llm\\multi_enengy_agent\\data\\mock_sources\\field_survey.json",
+            "retrieved_at": "2026-01-12T02:50:50.647503Z"
+          }
+        ]
+      },
+      {
+        "id": "HASREQUIREMENT_3298dcd6d1",
+        "source": "ENTERPRISE_000dc9fc4e",
+        "target": "REQUIREMENT_5d714a5626",
+        "type": "HAS_REQUIREMENT",
+        "props": {},
+        "refs": [
+          {
+            "source": "field_survey",
+            "uri": "D:\\ml_pro_master\\energy_llm\\multi_enengy_agent\\data\\mock_sources\\field_survey.json",
+            "retrieved_at": "2026-01-12T02:50:50.647503Z"
+          }
+        ]
+      },
+      {
+        "id": "HASPLANT_fd48083fc9",
+        "source": "ENTERPRISE_000dc9fc4e",
+        "target": "PLANT_31720379e6",
+        "type": "HAS_PLANT",
+        "props": {},
+        "refs": [
+          {
+            "source": "field_survey",
+            "uri": "D:\\ml_pro_master\\energy_llm\\multi_enengy_agent\\data\\mock_sources\\field_survey.json",
+            "retrieved_at": "2026-01-12T02:50:50.647503Z"
+          }
+        ]
+      },
+      {
+        "id": "HASWORKSHOP_653abfd178",
+        "source": "PLANT_31720379e6",
+        "target": "WORKSHOP_7b20b0ae6e",
+        "type": "HAS_WORKSHOP",
+        "props": {},
+        "refs": [
+          {
+            "source": "field_survey",
+            "uri": "D:\\ml_pro_master\\energy_llm\\multi_enengy_agent\\data\\mock_sources\\field_survey.json",
+            "retrieved_at": "2026-01-12T02:50:50.647503Z"
+          }
+        ]
+      },
+      {
+        "id": "HASLINE_bea9a60938",
+        "source": "WORKSHOP_7b20b0ae6e",
+        "target": "PROCESSLINE_6a02ca89ca",
+        "type": "HAS_LINE",
+        "props": {},
+        "refs": [
+          {
+            "source": "field_survey",
+            "uri": "D:\\ml_pro_master\\energy_llm\\multi_enengy_agent\\data\\mock_sources\\field_survey.json",
+            "retrieved_at": "2026-01-12T02:50:50.647503Z"
+          }
+        ]
+      },
+      {
+        "id": "HASUNIT_be74a477e0",
+        "source": "PROCESSLINE_6a02ca89ca",
+        "target": "PROCESSUNIT_9204e2bc0b",
+        "type": "HAS_UNIT",
+        "props": {},
+        "refs": [
+          {
+            "source": "field_survey",
+            "uri": "D:\\ml_pro_master\\energy_llm\\multi_enengy_agent\\data\\mock_sources\\field_survey.json",
+            "retrieved_at": "2026-01-12T02:50:50.647503Z"
+          }
+        ]
+      },
+      {
+        "id": "HASEQUIPMENT_ef6cc2bbf7",
+        "source": "PROCESSUNIT_9204e2bc0b",
+        "target": "EQUIPMENT_561588c1fb",
+        "type": "HAS_EQUIPMENT",
+        "props": {},
+        "refs": [
+          {
+            "source": "field_survey",
+            "uri": "D:\\ml_pro_master\\energy_llm\\multi_enengy_agent\\data\\mock_sources\\field_survey.json",
+            "retrieved_at": "2026-01-12T02:50:50.647503Z"
+          }
+        ]
+      },
+      {
+        "id": "CONSUMES_57d692d762",
+        "source": "EQUIPMENT_561588c1fb",
+        "target": "ENERGYDEMAND_9ce02ee414",
+        "type": "CONSUMES",
+        "props": {},
+        "refs": [
+          {
+            "source": "field_survey",
+            "uri": "D:\\ml_pro_master\\energy_llm\\multi_enengy_agent\\data\\mock_sources\\field_survey.json",
+            "retrieved_at": "2026-01-12T02:50:50.647503Z"
+          }
+        ]
+      },
+      {
+        "id": "HASBUILDING_f5493586b1",
+        "source": "PARK_da18f4314b",
+        "target": "BUILDING_b5936b2a8d",
+        "type": "HAS_BUILDING",
+        "props": {},
+        "refs": [
+          {
+            "source": "roof_inventory",
+            "uri": "D:\\ml_pro_master\\energy_llm\\multi_enengy_agent\\data\\mock_sources\\roof_inventory.csv",
+            "retrieved_at": "2026-01-12T02:50:50.647503Z"
+          }
+        ]
+      },
+      {
+        "id": "OWNSBUILDING_57d0fdc601",
+        "source": "ENTERPRISE_e1c22b48fc",
+        "target": "BUILDING_b5936b2a8d",
+        "type": "OWNS_BUILDING",
+        "props": {},
+        "refs": [
+          {
+            "source": "roof_inventory",
+            "uri": "D:\\ml_pro_master\\energy_llm\\multi_enengy_agent\\data\\mock_sources\\roof_inventory.csv",
+            "retrieved_at": "2026-01-12T02:50:50.647503Z"
+          }
+        ]
+      },
+      {
+        "id": "HASBUILDING_94d2ed3eb2",
+        "source": "PARK_da18f4314b",
+        "target": "BUILDING_1b945b8ade",
+        "type": "HAS_BUILDING",
+        "props": {},
+        "refs": [
+          {
+            "source": "roof_inventory",
+            "uri": "D:\\ml_pro_master\\energy_llm\\multi_enengy_agent\\data\\mock_sources\\roof_inventory.csv",
+            "retrieved_at": "2026-01-12T02:50:50.647503Z"
+          }
+        ]
+      },
+      {
+        "id": "OWNSBUILDING_414f5d49ab",
+        "source": "ENTERPRISE_e1c22b48fc",
+        "target": "BUILDING_1b945b8ade",
+        "type": "OWNS_BUILDING",
+        "props": {},
+        "refs": [
+          {
+            "source": "roof_inventory",
+            "uri": "D:\\ml_pro_master\\energy_llm\\multi_enengy_agent\\data\\mock_sources\\roof_inventory.csv",
+            "retrieved_at": "2026-01-12T02:50:50.647503Z"
+          }
+        ]
+      },
+      {
+        "id": "HASBUILDING_76fc9fcbd1",
+        "source": "PARK_da18f4314b",
+        "target": "BUILDING_81c4f74ad3",
+        "type": "HAS_BUILDING",
+        "props": {},
+        "refs": [
+          {
+            "source": "roof_inventory",
+            "uri": "D:\\ml_pro_master\\energy_llm\\multi_enengy_agent\\data\\mock_sources\\roof_inventory.csv",
+            "retrieved_at": "2026-01-12T02:50:50.647503Z"
+          }
+        ]
+      },
+      {
+        "id": "OWNSBUILDING_318fb2d93d",
+        "source": "ENTERPRISE_fd9e1f3aa7",
+        "target": "BUILDING_81c4f74ad3",
+        "type": "OWNS_BUILDING",
+        "props": {},
+        "refs": [
+          {
+            "source": "roof_inventory",
+            "uri": "D:\\ml_pro_master\\energy_llm\\multi_enengy_agent\\data\\mock_sources\\roof_inventory.csv",
+            "retrieved_at": "2026-01-12T02:50:50.647503Z"
+          }
+        ]
+      },
+      {
+        "id": "HASBUILDING_f1c100095e",
+        "source": "PARK_da18f4314b",
+        "target": "BUILDING_ad361fe9b6",
+        "type": "HAS_BUILDING",
+        "props": {},
+        "refs": [
+          {
+            "source": "roof_inventory",
+            "uri": "D:\\ml_pro_master\\energy_llm\\multi_enengy_agent\\data\\mock_sources\\roof_inventory.csv",
+            "retrieved_at": "2026-01-12T02:50:50.647503Z"
+          }
+        ]
+      },
+      {
+        "id": "OWNSBUILDING_1b1a83d6f8",
+        "source": "ENTERPRISE_000dc9fc4e",
+        "target": "BUILDING_ad361fe9b6",
+        "type": "OWNS_BUILDING",
+        "props": {},
+        "refs": [
+          {
+            "source": "roof_inventory",
+            "uri": "D:\\ml_pro_master\\energy_llm\\multi_enengy_agent\\data\\mock_sources\\roof_inventory.csv",
+            "retrieved_at": "2026-01-12T02:50:50.647503Z"
+          }
+        ]
+      },
+      {
+        "id": "HASENERGYRECORD_270b71377c",
+        "source": "ENTERPRISE_e1c22b48fc",
+        "target": "ENERGYBILLRECORD_9d89ec0711",
+        "type": "HAS_ENERGY_RECORD",
+        "props": {},
+        "refs": [
+          {
+            "source": "enterprise_energy_monthly_2023",
+            "uri": "D:\\ml_pro_master\\energy_llm\\multi_enengy_agent\\data\\mock_sources\\enterprise_energy_monthly_2023.csv",
+            "retrieved_at": "2026-01-12T02:50:50.647503Z"
+          }
+        ]
+      },
+      {
+        "id": "HASENERGYRECORD_c0980bf225",
+        "source": "ENTERPRISE_e1c22b48fc",
+        "target": "ENERGYBILLRECORD_3041bf6786",
+        "type": "HAS_ENERGY_RECORD",
+        "props": {},
+        "refs": [
+          {
+            "source": "enterprise_energy_monthly_2023",
+            "uri": "D:\\ml_pro_master\\energy_llm\\multi_enengy_agent\\data\\mock_sources\\enterprise_energy_monthly_2023.csv",
+            "retrieved_at": "2026-01-12T02:50:50.647503Z"
+          }
+        ]
+      },
+      {
+        "id": "HASENERGYRECORD_c7c5f0cab7",
+        "source": "ENTERPRISE_e1c22b48fc",
+        "target": "ENERGYBILLRECORD_1daad40206",
+        "type": "HAS_ENERGY_RECORD",
+        "props": {},
+        "refs": [
+          {
+            "source": "enterprise_energy_monthly_2023",
+            "uri": "D:\\ml_pro_master\\energy_llm\\multi_enengy_agent\\data\\mock_sources\\enterprise_energy_monthly_2023.csv",
+            "retrieved_at": "2026-01-12T02:50:50.647503Z"
+          }
+        ]
+      },
+      {
+        "id": "HASENERGYRECORD_bb4bf248e5",
+        "source": "ENTERPRISE_e1c22b48fc",
+        "target": "ENERGYBILLRECORD_e0e4026953",
+        "type": "HAS_ENERGY_RECORD",
+        "props": {},
+        "refs": [
+          {
+            "source": "enterprise_energy_monthly_2023",
+            "uri": "D:\\ml_pro_master\\energy_llm\\multi_enengy_agent\\data\\mock_sources\\enterprise_energy_monthly_2023.csv",
+            "retrieved_at": "2026-01-12T02:50:50.647503Z"
+          }
+        ]
+      },
+      {
+        "id": "HASENERGYRECORD_09c33f819f",
+        "source": "ENTERPRISE_e1c22b48fc",
+        "target": "ENERGYBILLRECORD_6367be0f5d",
+        "type": "HAS_ENERGY_RECORD",
+        "props": {},
+        "refs": [
+          {
+            "source": "enterprise_energy_monthly_2023",
+            "uri": "D:\\ml_pro_master\\energy_llm\\multi_enengy_agent\\data\\mock_sources\\enterprise_energy_monthly_2023.csv",
+            "retrieved_at": "2026-01-12T02:50:50.647503Z"
+          }
+        ]
+      },
+      {
+        "id": "HASENERGYRECORD_d9c9ca81c3",
+        "source": "ENTERPRISE_e1c22b48fc",
+        "target": "ENERGYBILLRECORD_0e6524f5b3",
+        "type": "HAS_ENERGY_RECORD",
+        "props": {},
+        "refs": [
+          {
+            "source": "enterprise_energy_monthly_2023",
+            "uri": "D:\\ml_pro_master\\energy_llm\\multi_enengy_agent\\data\\mock_sources\\enterprise_energy_monthly_2023.csv",
+            "retrieved_at": "2026-01-12T02:50:50.647503Z"
+          }
+        ]
+      },
+      {
+        "id": "HASENERGYRECORD_3c9e42c0a7",
+        "source": "ENTERPRISE_e1c22b48fc",
+        "target": "ENERGYBILLRECORD_3d8d386290",
+        "type": "HAS_ENERGY_RECORD",
+        "props": {},
+        "refs": [
+          {
+            "source": "enterprise_energy_monthly_2023",
+            "uri": "D:\\ml_pro_master\\energy_llm\\multi_enengy_agent\\data\\mock_sources\\enterprise_energy_monthly_2023.csv",
+            "retrieved_at": "2026-01-12T02:50:50.647503Z"
+          }
+        ]
+      },
+      {
+        "id": "HASENERGYRECORD_bab5b3dd96",
+        "source": "ENTERPRISE_e1c22b48fc",
+        "target": "ENERGYBILLRECORD_b966ed7ce8",
+        "type": "HAS_ENERGY_RECORD",
+        "props": {},
+        "refs": [
+          {
+            "source": "enterprise_energy_monthly_2023",
+            "uri": "D:\\ml_pro_master\\energy_llm\\multi_enengy_agent\\data\\mock_sources\\enterprise_energy_monthly_2023.csv",
+            "retrieved_at": "2026-01-12T02:50:50.647503Z"
+          }
+        ]
+      },
+      {
+        "id": "HASENERGYRECORD_e13df19360",
+        "source": "ENTERPRISE_e1c22b48fc",
+        "target": "ENERGYBILLRECORD_f899714083",
+        "type": "HAS_ENERGY_RECORD",
+        "props": {},
+        "refs": [
+          {
+            "source": "enterprise_energy_monthly_2023",
+            "uri": "D:\\ml_pro_master\\energy_llm\\multi_enengy_agent\\data\\mock_sources\\enterprise_energy_monthly_2023.csv",
+            "retrieved_at": "2026-01-12T02:50:50.647503Z"
+          }
+        ]
+      },
+      {
+        "id": "HASENERGYRECORD_08c84447ff",
+        "source": "ENTERPRISE_e1c22b48fc",
+        "target": "ENERGYBILLRECORD_7ae14a3b4e",
+        "type": "HAS_ENERGY_RECORD",
+        "props": {},
+        "refs": [
+          {
+            "source": "enterprise_energy_monthly_2023",
+            "uri": "D:\\ml_pro_master\\energy_llm\\multi_enengy_agent\\data\\mock_sources\\enterprise_energy_monthly_2023.csv",
+            "retrieved_at": "2026-01-12T02:50:50.647503Z"
+          }
+        ]
+      },
+      {
+        "id": "HASENERGYRECORD_efafbc6517",
+        "source": "ENTERPRISE_e1c22b48fc",
+        "target": "ENERGYBILLRECORD_9ca4f52a55",
+        "type": "HAS_ENERGY_RECORD",
+        "props": {},
+        "refs": [
+          {
+            "source": "enterprise_energy_monthly_2023",
+            "uri": "D:\\ml_pro_master\\energy_llm\\multi_enengy_agent\\data\\mock_sources\\enterprise_energy_monthly_2023.csv",
+            "retrieved_at": "2026-01-12T02:50:50.647503Z"
+          }
+        ]
+      },
+      {
+        "id": "HASENERGYRECORD_b9fabcb2c9",
+        "source": "ENTERPRISE_e1c22b48fc",
+        "target": "ENERGYBILLRECORD_17214b1cd0",
+        "type": "HAS_ENERGY_RECORD",
+        "props": {},
+        "refs": [
+          {
+            "source": "enterprise_energy_monthly_2023",
+            "uri": "D:\\ml_pro_master\\energy_llm\\multi_enengy_agent\\data\\mock_sources\\enterprise_energy_monthly_2023.csv",
+            "retrieved_at": "2026-01-12T02:50:50.647503Z"
+          }
+        ]
+      },
+      {
+        "id": "HASENERGYRECORD_eb776290db",
+        "source": "ENTERPRISE_fd9e1f3aa7",
+        "target": "ENERGYBILLRECORD_e2e87edc99",
+        "type": "HAS_ENERGY_RECORD",
+        "props": {},
+        "refs": [
+          {
+            "source": "enterprise_energy_monthly_2023",
+            "uri": "D:\\ml_pro_master\\energy_llm\\multi_enengy_agent\\data\\mock_sources\\enterprise_energy_monthly_2023.csv",
+            "retrieved_at": "2026-01-12T02:50:50.647503Z"
+          }
+        ]
+      },
+      {
+        "id": "HASENERGYRECORD_5a8d3e1988",
+        "source": "ENTERPRISE_fd9e1f3aa7",
+        "target": "ENERGYBILLRECORD_1dfd66d14b",
+        "type": "HAS_ENERGY_RECORD",
+        "props": {},
+        "refs": [
+          {
+            "source": "enterprise_energy_monthly_2023",
+            "uri": "D:\\ml_pro_master\\energy_llm\\multi_enengy_agent\\data\\mock_sources\\enterprise_energy_monthly_2023.csv",
+            "retrieved_at": "2026-01-12T02:50:50.647503Z"
+          }
+        ]
+      },
+      {
+        "id": "HASENERGYRECORD_eee8328894",
+        "source": "ENTERPRISE_fd9e1f3aa7",
+        "target": "ENERGYBILLRECORD_d634f1968a",
+        "type": "HAS_ENERGY_RECORD",
+        "props": {},
+        "refs": [
+          {
+            "source": "enterprise_energy_monthly_2023",
+            "uri": "D:\\ml_pro_master\\energy_llm\\multi_enengy_agent\\data\\mock_sources\\enterprise_energy_monthly_2023.csv",
+            "retrieved_at": "2026-01-12T02:50:50.647503Z"
+          }
+        ]
+      },
+      {
+        "id": "HASENERGYRECORD_91d0ab3f18",
+        "source": "ENTERPRISE_fd9e1f3aa7",
+        "target": "ENERGYBILLRECORD_f02ec0a9e3",
+        "type": "HAS_ENERGY_RECORD",
+        "props": {},
+        "refs": [
+          {
+            "source": "enterprise_energy_monthly_2023",
+            "uri": "D:\\ml_pro_master\\energy_llm\\multi_enengy_agent\\data\\mock_sources\\enterprise_energy_monthly_2023.csv",
+            "retrieved_at": "2026-01-12T02:50:50.647503Z"
+          }
+        ]
+      },
+      {
+        "id": "HASENERGYRECORD_6c60012922",
+        "source": "ENTERPRISE_fd9e1f3aa7",
+        "target": "ENERGYBILLRECORD_09587c75f3",
+        "type": "HAS_ENERGY_RECORD",
+        "props": {},
+        "refs": [
+          {
+            "source": "enterprise_energy_monthly_2023",
+            "uri": "D:\\ml_pro_master\\energy_llm\\multi_enengy_agent\\data\\mock_sources\\enterprise_energy_monthly_2023.csv",
+            "retrieved_at": "2026-01-12T02:50:50.647503Z"
+          }
+        ]
+      },
+      {
+        "id": "HASENERGYRECORD_ea05fe1a67",
+        "source": "ENTERPRISE_fd9e1f3aa7",
+        "target": "ENERGYBILLRECORD_414758fc07",
+        "type": "HAS_ENERGY_RECORD",
+        "props": {},
+        "refs": [
+          {
+            "source": "enterprise_energy_monthly_2023",
+            "uri": "D:\\ml_pro_master\\energy_llm\\multi_enengy_agent\\data\\mock_sources\\enterprise_energy_monthly_2023.csv",
+            "retrieved_at": "2026-01-12T02:50:50.647503Z"
+          }
+        ]
+      },
+      {
+        "id": "HASENERGYRECORD_35ec7c4e5f",
+        "source": "ENTERPRISE_fd9e1f3aa7",
+        "target": "ENERGYBILLRECORD_0781af5f91",
+        "type": "HAS_ENERGY_RECORD",
+        "props": {},
+        "refs": [
+          {
+            "source": "enterprise_energy_monthly_2023",
+            "uri": "D:\\ml_pro_master\\energy_llm\\multi_enengy_agent\\data\\mock_sources\\enterprise_energy_monthly_2023.csv",
+            "retrieved_at": "2026-01-12T02:50:50.647503Z"
+          }
+        ]
+      },
+      {
+        "id": "HASENERGYRECORD_8c928dcd84",
+        "source": "ENTERPRISE_fd9e1f3aa7",
+        "target": "ENERGYBILLRECORD_967e02caa9",
+        "type": "HAS_ENERGY_RECORD",
+        "props": {},
+        "refs": [
+          {
+            "source": "enterprise_energy_monthly_2023",
+            "uri": "D:\\ml_pro_master\\energy_llm\\multi_enengy_agent\\data\\mock_sources\\enterprise_energy_monthly_2023.csv",
+            "retrieved_at": "2026-01-12T02:50:50.647503Z"
+          }
+        ]
+      },
+      {
+        "id": "HASENERGYRECORD_f8d71e2075",
+        "source": "ENTERPRISE_fd9e1f3aa7",
+        "target": "ENERGYBILLRECORD_e71ef1591c",
+        "type": "HAS_ENERGY_RECORD",
+        "props": {},
+        "refs": [
+          {
+            "source": "enterprise_energy_monthly_2023",
+            "uri": "D:\\ml_pro_master\\energy_llm\\multi_enengy_agent\\data\\mock_sources\\enterprise_energy_monthly_2023.csv",
+            "retrieved_at": "2026-01-12T02:50:50.647503Z"
+          }
+        ]
+      },
+      {
+        "id": "HASENERGYRECORD_71eb51e3ec",
+        "source": "ENTERPRISE_fd9e1f3aa7",
+        "target": "ENERGYBILLRECORD_5137fabd4e",
+        "type": "HAS_ENERGY_RECORD",
+        "props": {},
+        "refs": [
+          {
+            "source": "enterprise_energy_monthly_2023",
+            "uri": "D:\\ml_pro_master\\energy_llm\\multi_enengy_agent\\data\\mock_sources\\enterprise_energy_monthly_2023.csv",
+            "retrieved_at": "2026-01-12T02:50:50.647503Z"
+          }
+        ]
+      },
+      {
+        "id": "HASENERGYRECORD_6907708955",
+        "source": "ENTERPRISE_fd9e1f3aa7",
+        "target": "ENERGYBILLRECORD_8c665daf0b",
+        "type": "HAS_ENERGY_RECORD",
+        "props": {},
+        "refs": [
+          {
+            "source": "enterprise_energy_monthly_2023",
+            "uri": "D:\\ml_pro_master\\energy_llm\\multi_enengy_agent\\data\\mock_sources\\enterprise_energy_monthly_2023.csv",
+            "retrieved_at": "2026-01-12T02:50:50.647503Z"
+          }
+        ]
+      },
+      {
+        "id": "HASENERGYRECORD_dacf3e0146",
+        "source": "ENTERPRISE_fd9e1f3aa7",
+        "target": "ENERGYBILLRECORD_a872d588c1",
+        "type": "HAS_ENERGY_RECORD",
+        "props": {},
+        "refs": [
+          {
+            "source": "enterprise_energy_monthly_2023",
+            "uri": "D:\\ml_pro_master\\energy_llm\\multi_enengy_agent\\data\\mock_sources\\enterprise_energy_monthly_2023.csv",
+            "retrieved_at": "2026-01-12T02:50:50.647503Z"
+          }
+        ]
+      },
+      {
+        "id": "HASENERGYRECORD_1a1ca4a4fa",
+        "source": "ENTERPRISE_000dc9fc4e",
+        "target": "ENERGYBILLRECORD_fdef7e67f2",
+        "type": "HAS_ENERGY_RECORD",
+        "props": {},
+        "refs": [
+          {
+            "source": "enterprise_energy_monthly_2023",
+            "uri": "D:\\ml_pro_master\\energy_llm\\multi_enengy_agent\\data\\mock_sources\\enterprise_energy_monthly_2023.csv",
+            "retrieved_at": "2026-01-12T02:50:50.647503Z"
+          }
+        ]
+      },
+      {
+        "id": "HASENERGYRECORD_9e0b1f1025",
+        "source": "ENTERPRISE_000dc9fc4e",
+        "target": "ENERGYBILLRECORD_2f8a64e595",
+        "type": "HAS_ENERGY_RECORD",
+        "props": {},
+        "refs": [
+          {
+            "source": "enterprise_energy_monthly_2023",
+            "uri": "D:\\ml_pro_master\\energy_llm\\multi_enengy_agent\\data\\mock_sources\\enterprise_energy_monthly_2023.csv",
+            "retrieved_at": "2026-01-12T02:50:50.647503Z"
+          }
+        ]
+      },
+      {
+        "id": "HASENERGYRECORD_49e3247c07",
+        "source": "ENTERPRISE_000dc9fc4e",
+        "target": "ENERGYBILLRECORD_92d44514d8",
+        "type": "HAS_ENERGY_RECORD",
+        "props": {},
+        "refs": [
+          {
+            "source": "enterprise_energy_monthly_2023",
+            "uri": "D:\\ml_pro_master\\energy_llm\\multi_enengy_agent\\data\\mock_sources\\enterprise_energy_monthly_2023.csv",
+            "retrieved_at": "2026-01-12T02:50:50.647503Z"
+          }
+        ]
+      },
+      {
+        "id": "HASENERGYRECORD_1d1018da9e",
+        "source": "ENTERPRISE_000dc9fc4e",
+        "target": "ENERGYBILLRECORD_879a2eb6d1",
+        "type": "HAS_ENERGY_RECORD",
+        "props": {},
+        "refs": [
+          {
+            "source": "enterprise_energy_monthly_2023",
+            "uri": "D:\\ml_pro_master\\energy_llm\\multi_enengy_agent\\data\\mock_sources\\enterprise_energy_monthly_2023.csv",
+            "retrieved_at": "2026-01-12T02:50:50.647503Z"
+          }
+        ]
+      },
+      {
+        "id": "HASENERGYRECORD_a3065986d6",
+        "source": "ENTERPRISE_000dc9fc4e",
+        "target": "ENERGYBILLRECORD_d1bf791b32",
+        "type": "HAS_ENERGY_RECORD",
+        "props": {},
+        "refs": [
+          {
+            "source": "enterprise_energy_monthly_2023",
+            "uri": "D:\\ml_pro_master\\energy_llm\\multi_enengy_agent\\data\\mock_sources\\enterprise_energy_monthly_2023.csv",
+            "retrieved_at": "2026-01-12T02:50:50.647503Z"
+          }
+        ]
+      },
+      {
+        "id": "HASENERGYRECORD_1a150ff3e5",
+        "source": "ENTERPRISE_000dc9fc4e",
+        "target": "ENERGYBILLRECORD_b61fd80f48",
+        "type": "HAS_ENERGY_RECORD",
+        "props": {},
+        "refs": [
+          {
+            "source": "enterprise_energy_monthly_2023",
+            "uri": "D:\\ml_pro_master\\energy_llm\\multi_enengy_agent\\data\\mock_sources\\enterprise_energy_monthly_2023.csv",
+            "retrieved_at": "2026-01-12T02:50:50.647503Z"
+          }
+        ]
+      },
+      {
+        "id": "HASENERGYRECORD_71178d842f",
+        "source": "ENTERPRISE_000dc9fc4e",
+        "target": "ENERGYBILLRECORD_aaba0a97b3",
+        "type": "HAS_ENERGY_RECORD",
+        "props": {},
+        "refs": [
+          {
+            "source": "enterprise_energy_monthly_2023",
+            "uri": "D:\\ml_pro_master\\energy_llm\\multi_enengy_agent\\data\\mock_sources\\enterprise_energy_monthly_2023.csv",
+            "retrieved_at": "2026-01-12T02:50:50.647503Z"
+          }
+        ]
+      },
+      {
+        "id": "HASENERGYRECORD_163065722e",
+        "source": "ENTERPRISE_000dc9fc4e",
+        "target": "ENERGYBILLRECORD_474a91f4dc",
+        "type": "HAS_ENERGY_RECORD",
+        "props": {},
+        "refs": [
+          {
+            "source": "enterprise_energy_monthly_2023",
+            "uri": "D:\\ml_pro_master\\energy_llm\\multi_enengy_agent\\data\\mock_sources\\enterprise_energy_monthly_2023.csv",
+            "retrieved_at": "2026-01-12T02:50:50.647503Z"
+          }
+        ]
+      },
+      {
+        "id": "HASENERGYRECORD_2fab518735",
+        "source": "ENTERPRISE_000dc9fc4e",
+        "target": "ENERGYBILLRECORD_a5238a55c8",
+        "type": "HAS_ENERGY_RECORD",
+        "props": {},
+        "refs": [
+          {
+            "source": "enterprise_energy_monthly_2023",
+            "uri": "D:\\ml_pro_master\\energy_llm\\multi_enengy_agent\\data\\mock_sources\\enterprise_energy_monthly_2023.csv",
+            "retrieved_at": "2026-01-12T02:50:50.647503Z"
+          }
+        ]
+      },
+      {
+        "id": "HASENERGYRECORD_ddff491c71",
+        "source": "ENTERPRISE_000dc9fc4e",
+        "target": "ENERGYBILLRECORD_f1e08ab7d8",
+        "type": "HAS_ENERGY_RECORD",
+        "props": {},
+        "refs": [
+          {
+            "source": "enterprise_energy_monthly_2023",
+            "uri": "D:\\ml_pro_master\\energy_llm\\multi_enengy_agent\\data\\mock_sources\\enterprise_energy_monthly_2023.csv",
+            "retrieved_at": "2026-01-12T02:50:50.647503Z"
+          }
+        ]
+      },
+      {
+        "id": "HASENERGYRECORD_984913730a",
+        "source": "ENTERPRISE_000dc9fc4e",
+        "target": "ENERGYBILLRECORD_4398ce663f",
+        "type": "HAS_ENERGY_RECORD",
+        "props": {},
+        "refs": [
+          {
+            "source": "enterprise_energy_monthly_2023",
+            "uri": "D:\\ml_pro_master\\energy_llm\\multi_enengy_agent\\data\\mock_sources\\enterprise_energy_monthly_2023.csv",
+            "retrieved_at": "2026-01-12T02:50:50.647503Z"
+          }
+        ]
+      },
+      {
+        "id": "HASENERGYRECORD_a3c0ae714e",
+        "source": "ENTERPRISE_000dc9fc4e",
+        "target": "ENERGYBILLRECORD_f9b3784ffa",
+        "type": "HAS_ENERGY_RECORD",
+        "props": {},
+        "refs": [
+          {
+            "source": "enterprise_energy_monthly_2023",
+            "uri": "D:\\ml_pro_master\\energy_llm\\multi_enengy_agent\\data\\mock_sources\\enterprise_energy_monthly_2023.csv",
+            "retrieved_at": "2026-01-12T02:50:50.647503Z"
+          }
+        ]
+      },
+      {
+        "id": "RELEVANTTO_d4ebe82948",
+        "source": "POLICYDOC_3f7102045f",
+        "target": "PARK_da18f4314b",
+        "type": "RELEVANT_TO",
+        "props": {
+          "reason": "policy_scope_may_cover_park"
+        },
+        "refs": [
+          {
+            "source": "policy_report_extract",
+            "uri": "D:\\ml_pro_master\\energy_llm\\multi_enengy_agent\\data\\mock_sources\\policy_report_extract.json",
+            "retrieved_at": "2026-01-12T02:50:50.647503Z"
+          }
+        ]
+      },
+      {
+        "id": "RELEVANTTO_655fdebfd5",
+        "source": "POLICYDOC_a2c0cf3013",
+        "target": "PARK_da18f4314b",
+        "type": "RELEVANT_TO",
+        "props": {
+          "reason": "policy_scope_may_cover_park"
+        },
+        "refs": [
+          {
+            "source": "policy_report_extract",
+            "uri": "D:\\ml_pro_master\\energy_llm\\multi_enengy_agent\\data\\mock_sources\\policy_report_extract.json",
+            "retrieved_at": "2026-01-12T02:50:50.647503Z"
+          }
+        ]
+      },
+      {
+        "id": "RELEVANTTO_c55b0a7bc6",
+        "source": "POLICYDOC_3ea26790d5",
+        "target": "PARK_da18f4314b",
+        "type": "RELEVANT_TO",
+        "props": {
+          "reason": "policy_scope_may_cover_park"
+        },
+        "refs": [
+          {
+            "source": "policy_report_extract",
+            "uri": "D:\\ml_pro_master\\energy_llm\\multi_enengy_agent\\data\\mock_sources\\policy_report_extract.json",
+            "retrieved_at": "2026-01-12T02:50:50.647503Z"
+          }
+        ]
+      },
+      {
+        "id": "HASCLAUSE_ac0679d75d",
+        "source": "POLICYDOC_3f7102045f",
+        "target": "POLICYCLAUSE_d69def7c33",
+        "type": "HAS_CLAUSE",
+        "props": {},
+        "refs": [
+          {
+            "source": "policy_report_extract",
+            "uri": "D:\\ml_pro_master\\energy_llm\\multi_enengy_agent\\data\\mock_sources\\policy_report_extract.json",
+            "retrieved_at": "2026-01-12T02:50:50.647503Z"
+          }
+        ]
+      },
+      {
+        "id": "SCOPEDTO_f29507b813",
+        "source": "POLICYCLAUSE_d69def7c33",
+        "target": "ADMINREGION_c2787b0870",
+        "type": "SCOPED_TO",
+        "props": {
+          "dimension": "admin_code"
+        },
+        "refs": [
+          {
+            "source": "policy_report_extract",
+            "uri": "D:\\ml_pro_master\\energy_llm\\multi_enengy_agent\\data\\mock_sources\\policy_report_extract.json",
+            "retrieved_at": "2026-01-12T02:50:50.647503Z"
+          }
+        ]
+      },
+      {
+        "id": "SUPPORTS_78a9c4dcb6",
+        "source": "POLICYCLAUSE_d69def7c33",
+        "target": "MEASURE_950f5e2ce4",
+        "type": "SUPPORTS",
+        "props": {},
+        "refs": [
+          {
+            "source": "policy_report_extract",
+            "uri": "D:\\ml_pro_master\\energy_llm\\multi_enengy_agent\\data\\mock_sources\\policy_report_extract.json",
+            "retrieved_at": "2026-01-12T02:50:50.647503Z"
+          }
+        ]
+      },
+      {
+        "id": "HASCLAUSE_5681ac3e3b",
+        "source": "POLICYDOC_3f7102045f",
+        "target": "POLICYCLAUSE_273f531a3e",
+        "type": "HAS_CLAUSE",
+        "props": {},
+        "refs": [
+          {
+            "source": "policy_report_extract",
+            "uri": "D:\\ml_pro_master\\energy_llm\\multi_enengy_agent\\data\\mock_sources\\policy_report_extract.json",
+            "retrieved_at": "2026-01-12T02:50:50.647503Z"
+          }
+        ]
+      },
+      {
+        "id": "SCOPEDTO_9b6010fe9d",
+        "source": "POLICYCLAUSE_273f531a3e",
+        "target": "ADMINREGION_c2787b0870",
+        "type": "SCOPED_TO",
+        "props": {
+          "dimension": "admin_code"
+        },
+        "refs": [
+          {
+            "source": "policy_report_extract",
+            "uri": "D:\\ml_pro_master\\energy_llm\\multi_enengy_agent\\data\\mock_sources\\policy_report_extract.json",
+            "retrieved_at": "2026-01-12T02:50:50.647503Z"
+          }
+        ]
+      },
+      {
+        "id": "SCOPEDTO_eb2d592649",
+        "source": "POLICYCLAUSE_273f531a3e",
+        "target": "INDUSTRY_529275d5f6",
+        "type": "SCOPED_TO",
+        "props": {
+          "dimension": "industry_code"
+        },
+        "refs": [
+          {
+            "source": "policy_report_extract",
+            "uri": "D:\\ml_pro_master\\energy_llm\\multi_enengy_agent\\data\\mock_sources\\policy_report_extract.json",
+            "retrieved_at": "2026-01-12T02:50:50.647503Z"
+          }
+        ]
+      },
+      {
+        "id": "SCOPEDTO_85a89627da",
+        "source": "POLICYCLAUSE_273f531a3e",
+        "target": "INDUSTRY_99351a6718",
+        "type": "SCOPED_TO",
+        "props": {
+          "dimension": "industry_code"
+        },
+        "refs": [
+          {
+            "source": "policy_report_extract",
+            "uri": "D:\\ml_pro_master\\energy_llm\\multi_enengy_agent\\data\\mock_sources\\policy_report_extract.json",
+            "retrieved_at": "2026-01-12T02:50:50.647503Z"
+          }
+        ]
+      },
+      {
+        "id": "SUPPORTS_c9f514f6eb",
+        "source": "POLICYCLAUSE_273f531a3e",
+        "target": "MEASURE_3aaee474e2",
+        "type": "SUPPORTS",
+        "props": {},
+        "refs": [
+          {
+            "source": "policy_report_extract",
+            "uri": "D:\\ml_pro_master\\energy_llm\\multi_enengy_agent\\data\\mock_sources\\policy_report_extract.json",
+            "retrieved_at": "2026-01-12T02:50:50.647503Z"
+          }
+        ]
+      },
+      {
+        "id": "HASCLAUSE_3b4ae5049a",
+        "source": "POLICYDOC_a2c0cf3013",
+        "target": "POLICYCLAUSE_728655dcc0",
+        "type": "HAS_CLAUSE",
+        "props": {},
+        "refs": [
+          {
+            "source": "policy_report_extract",
+            "uri": "D:\\ml_pro_master\\energy_llm\\multi_enengy_agent\\data\\mock_sources\\policy_report_extract.json",
+            "retrieved_at": "2026-01-12T02:50:50.647503Z"
+          }
+        ]
+      },
+      {
+        "id": "SCOPEDTO_d37da7b88e",
+        "source": "POLICYCLAUSE_728655dcc0",
+        "target": "ADMINREGION_c2787b0870",
+        "type": "SCOPED_TO",
+        "props": {
+          "dimension": "admin_code"
+        },
+        "refs": [
+          {
+            "source": "policy_report_extract",
+            "uri": "D:\\ml_pro_master\\energy_llm\\multi_enengy_agent\\data\\mock_sources\\policy_report_extract.json",
+            "retrieved_at": "2026-01-12T02:50:50.647503Z"
+          }
+        ]
+      },
+      {
+        "id": "SCOPEDTO_1e6c9afdc1",
+        "source": "POLICYCLAUSE_728655dcc0",
+        "target": "INDUSTRY_529275d5f6",
+        "type": "SCOPED_TO",
+        "props": {
+          "dimension": "industry_code"
+        },
+        "refs": [
+          {
+            "source": "policy_report_extract",
+            "uri": "D:\\ml_pro_master\\energy_llm\\multi_enengy_agent\\data\\mock_sources\\policy_report_extract.json",
+            "retrieved_at": "2026-01-12T02:50:50.647503Z"
+          }
+        ]
+      },
+      {
+        "id": "SCOPEDTO_b73f04b9b9",
+        "source": "POLICYCLAUSE_728655dcc0",
+        "target": "INDUSTRY_99351a6718",
+        "type": "SCOPED_TO",
+        "props": {
+          "dimension": "industry_code"
+        },
+        "refs": [
+          {
+            "source": "policy_report_extract",
+            "uri": "D:\\ml_pro_master\\energy_llm\\multi_enengy_agent\\data\\mock_sources\\policy_report_extract.json",
+            "retrieved_at": "2026-01-12T02:50:50.647503Z"
+          }
+        ]
+      },
+      {
+        "id": "SCOPEDTO_58571c1bd5",
+        "source": "POLICYCLAUSE_728655dcc0",
+        "target": "INDUSTRY_78479a144b",
+        "type": "SCOPED_TO",
+        "props": {
+          "dimension": "industry_code"
+        },
+        "refs": [
+          {
+            "source": "policy_report_extract",
+            "uri": "D:\\ml_pro_master\\energy_llm\\multi_enengy_agent\\data\\mock_sources\\policy_report_extract.json",
+            "retrieved_at": "2026-01-12T02:50:50.647503Z"
+          }
+        ]
+      },
+      {
+        "id": "SUPPORTS_6564f4037f",
+        "source": "POLICYCLAUSE_728655dcc0",
+        "target": "MEASURE_2deb30a286",
+        "type": "SUPPORTS",
+        "props": {},
+        "refs": [
+          {
+            "source": "policy_report_extract",
+            "uri": "D:\\ml_pro_master\\energy_llm\\multi_enengy_agent\\data\\mock_sources\\policy_report_extract.json",
+            "retrieved_at": "2026-01-12T02:50:50.647503Z"
+          }
+        ]
+      },
+      {
+        "id": "HASCLAUSE_41e205d58b",
+        "source": "POLICYDOC_3ea26790d5",
+        "target": "POLICYCLAUSE_6a4b56d3fd",
+        "type": "HAS_CLAUSE",
+        "props": {},
+        "refs": [
+          {
+            "source": "policy_report_extract",
+            "uri": "D:\\ml_pro_master\\energy_llm\\multi_enengy_agent\\data\\mock_sources\\policy_report_extract.json",
+            "retrieved_at": "2026-01-12T02:50:50.647503Z"
+          }
+        ]
+      },
+      {
+        "id": "SCOPEDTO_63aa516691",
+        "source": "POLICYCLAUSE_6a4b56d3fd",
+        "target": "ADMINREGION_c0ba6bfc34",
+        "type": "SCOPED_TO",
+        "props": {
+          "dimension": "admin_code"
+        },
+        "refs": [
+          {
+            "source": "policy_report_extract",
+            "uri": "D:\\ml_pro_master\\energy_llm\\multi_enengy_agent\\data\\mock_sources\\policy_report_extract.json",
+            "retrieved_at": "2026-01-12T02:50:50.647503Z"
+          }
+        ]
+      },
+      {
+        "id": "SUPPORTS_63fe9e1d44",
+        "source": "POLICYCLAUSE_6a4b56d3fd",
+        "target": "MEASURE_2e6055421b",
+        "type": "SUPPORTS",
+        "props": {},
+        "refs": [
+          {
+            "source": "policy_report_extract",
+            "uri": "D:\\ml_pro_master\\energy_llm\\multi_enengy_agent\\data\\mock_sources\\policy_report_extract.json",
+            "retrieved_at": "2026-01-12T02:50:50.647503Z"
+          }
+        ]
+      }
+    ]
+  }
+}

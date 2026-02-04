@@ -4,10 +4,12 @@ from __future__ import annotations
 
 import asyncio
 import logging
+from pathlib import Path
 from typing import List
 
 from fastapi import FastAPI, HTTPException, WebSocket, Query
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import FileResponse
 
 from ..schemas import Stage
 from ..llm import StructuredLLMClient
@@ -189,3 +191,58 @@ async def reset_chat() -> dict:
     """重置对话状态"""
     chat_agent.reset()
     return {"status": "ok", "message": "对话已重置"}
+
+
+@app.get("/api/v1/scenarios/{scenario_id}/report/pdf", tags=["report"])
+async def download_pdf_report(scenario_id: str) -> FileResponse:
+    """下载 PDF 报告"""
+    # 查找 PDF 文件
+    pdf_path = Path("outputs") / scenario_id / "report.pdf"
+
+    if not pdf_path.exists():
+        raise HTTPException(status_code=404, detail=f"PDF 报告不存在: {scenario_id}")
+
+    return FileResponse(
+        path=str(pdf_path),
+        filename=f"{scenario_id}_report.pdf",
+        media_type="application/pdf"
+    )
+
+
+@app.get("/api/v1/scenarios/{scenario_id}/report/md", tags=["report"])
+async def download_markdown_report(scenario_id: str) -> FileResponse:
+    """下载 Markdown 报告"""
+    md_path = Path("outputs") / scenario_id / "report.md"
+
+    if not md_path.exists():
+        raise HTTPException(status_code=404, detail=f"Markdown 报告不存在: {scenario_id}")
+
+    return FileResponse(
+        path=str(md_path),
+        filename=f"{scenario_id}_report.md",
+        media_type="text/markdown"
+    )
+
+
+@app.get("/api/v1/reports", tags=["report"])
+async def list_reports() -> dict:
+    """列出所有已生成的报告"""
+    outputs_dir = Path("outputs")
+    reports = []
+
+    if outputs_dir.exists():
+        for scenario_dir in outputs_dir.iterdir():
+            if scenario_dir.is_dir():
+                pdf_path = scenario_dir / "report.pdf"
+                md_path = scenario_dir / "report.md"
+
+                if pdf_path.exists() or md_path.exists():
+                    reports.append({
+                        "scenario_id": scenario_dir.name,
+                        "has_pdf": pdf_path.exists(),
+                        "has_md": md_path.exists(),
+                        "pdf_size": pdf_path.stat().st_size if pdf_path.exists() else 0,
+                        "md_size": md_path.stat().st_size if md_path.exists() else 0,
+                    })
+
+    return {"reports": reports, "total": len(reports)}

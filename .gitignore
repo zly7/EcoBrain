@@ -1,26 +1,8 @@
-# Byte-compiled / optimized / DLL files
+# Python
 __pycache__/
 *.py[cod]
 *$py.class
-*.pptx
-*.xlsx
-local*
-repomix*
-别人支持*/
-multi_energy_agent/agent_refactor_code.md
-*.zip
-logs*/
-*.cpg
-*.dbf
-*.prj
-*.shp
-*.shx
-*.csv
-# C extensions
 *.so
-GPT5PRO*/
-nanoBanana*/
-# Distribution / packaging
 .Python
 build/
 develop-eggs/
@@ -37,16 +19,10 @@ wheels/
 *.egg-info/
 .installed.cfg
 *.egg
-
-# PyInstaller
 *.manifest
 *.spec
-
-# Installer logs
 pip-log.txt
 pip-delete-this-directory.txt
-
-# Unit test / coverage reports
 htmlcov/
 .tox/
 .nox/
@@ -59,20 +35,16 @@ coverage.xml
 *.py,cover
 .hypothesis/
 .pytest_cache/
-
-# Translations
 *.mo
 *.pot
-
-# Jupyter Notebook
 .ipynb_checkpoints
-
-# IPython
 profile_default/
 ipython_config.py
-
-# pyenv
 .python-version
+.mypy_cache/
+.dmypy.json
+dmypy.json
+.pyre/
 
 # Environments
 .env
@@ -82,24 +54,6 @@ venv/
 ENV/
 env.bak/
 venv.bak/
-
-# Spyder project settings
-.spyderproject
-.spyproject
-
-# Rope project settings
-.ropeproject
-
-# mkdocs documentation
-/site
-
-# mypy
-.mypy_cache/
-.dmypy.json
-dmypy.json
-
-# Pyre type checker
-.pyre/
 
 # IDE
 .idea/
@@ -112,13 +66,16 @@ dmypy.json
 .DS_Store
 Thumbs.db
 
-# Project specific
+# Logs
+logs*/
 *.log
+
+# Outputs
+outputs/
+
+# Temporary files
 *.tmp
 *.temp
-output/
-outputs/
-data/
 *.pkl
 *.pickle
 
@@ -128,6 +85,35 @@ data/
 secrets.json
 config.local.py
 
-# Allow mock policy KG data committed under package directory
-!multi_enengy_agent/data/
-!multi_enengy_agent/data/mock_policy_kg.json
+# Data files (large)
+*.pptx
+*.xlsx
+*.csv
+*.cpg
+*.dbf
+*.prj
+*.shp
+*.shx
+*.zip
+
+# Local development files
+local*
+repomix*
+
+# Misc folders
+别人支持*/
+GPT5PRO*/
+nanoBanana*/
+电气电PPT/
+chinese_skill/
+
+# Frontend
+frontend/node_modules/
+frontend/dist/
+frontend/.vite/
+
+# Allow specific files
+!multi_energy_agent/data/
+!multi_energy_agent/data/*.json
+!other_back_data/**/__init__.py
+!other_back_data/**/interface.py
